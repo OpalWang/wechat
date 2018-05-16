@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>业务类型切换</title>
+		<!--css-->
+		
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+  		<%= stylesheet_link_tag    'wechat/parcel'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+	</head>
+
+	<body>
+		<div id="server_switch">
+			<%if flash[:notice]=="未绑定EuropeTime帐号, 请先绑定"%>
+				<div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:200px">未绑定 EuropeTime 帐号, 请先绑定 !</div>
+			<%else%>
+				<%if flash[:notice].present?%>
+					<div id="error_explanation" class="alert alert-info">
+						<%=flash[:notice]%>
+					</div>
+				<%end%>
+		
+		
+				<div class="circle">
+					<img src="/assets/wechat/ren3.png">
+				</div>
+				<div class="search_panel" style="height:148px">
+		                      
+		                                        <%= form_tag(weixin_parcel_list_path, :method => "get",:class=>"myform1") do %>
+		                                        	<div style="margin-bottom:10px"> 请选择业务类型</div>
+	                                                      
+		                                        	<%= select_tag('server', options_for_select([['MYPOST4U(欧中个人包裹业务)','overseas'],['FBA(中欧电商包裹业务)','domestic']], ''), class:"select_search",style:"background-color:#fff;") %>
+	                                                       
+		                                           <input type="submit" value="确认" class="btn" />
+		                                        <% end %>
+		                                
+		                        	</div>	
+		               <%end%>
+		</div>	
+	
+	</body>
+	
+</html>

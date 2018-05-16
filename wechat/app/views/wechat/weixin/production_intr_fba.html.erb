@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>FBA专线</title>
+        <!--css-->
+         <%= stylesheet_link_tag    'bootstrap.min'%>
+          <%= stylesheet_link_tag    'wechat/style'%>
+          <%= stylesheet_link_tag    'asiabiz/static_2'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+    </head>
+   <body>
+       <div id="content" class="my-container">
+
+<article>
+  <div id="static-page" style="margin-top:0px;margin-bottom:0px;">
+     <div class="static-content" >
+         <div class="static-main clearfix">
+        <p class="static-title" style="text-align:center">UPS 包裹查询事项和索赔流程</p>
+        <p class="text-style-2 top-gap-2"><b><h4>一. 包裹查询事项</h4></b></p>
+        </br>
+            <p class="text-style-1">一般在货物完成清关交付给快递公司 UPS 后的第二个工作日,包裹会有上网信息。用跟踪单号在 UPS : <I>https://www.ups.com</I></p>
+            <p class="text-style-1">投递参考时效 :</p>
+            <table border="1">
+                <tr>
+                    <td>目的国</td>
+                    <td align="center">DE</td>
+                    <td align="center">GB</td>
+                    <td align="center">IT</td>
+                    <td align="center">FR</td>
+                    <td align="center">ES</td>
+                    <td align="center">PL</td>
+                </tr>
+                <tr>
+                    <td>参考时效</td>
+                    <td>1 工作日</td>
+                    <td>2-3 工作日</td>
+                    <td>2-3 工作日</td>
+                    <td>2-3 工作日</td>
+                    <td>2-3 工作日</td>
+                    <td>2-3 工作日</td>
+                </tr>
+            </table>
+            </br>
+            <p><b>备注:</b></p>
+            <p  class="text-style-1">1:以交付给 UPS 起开始计算</p>
+            <p  class="text-style-1">2:以上均指投递 FBA 亚马逊仓库时效,FBC 仓及私仓可能会出现投递延迟</p>
+            <p  class="text-style-1">3:在欧洲节假日,如:复活节、圣诞节期间,包裹都会有不同程度的投递延误</p>
+            </br>
+            <p class="text-style-1">1. 当包裹在某一个状态下超过 5 天停滞不动时(以交付给快递公司 UPS 起开始计算
+            ),请及时联系我司客服查询,填写<span class="text-danger">《FBA专线-包裹查询申请表》</span>以邮件方式发到邮箱<span class="text-info">service.fba@mypost4u.com</span>。我司会及时协助客户向快递公司 UPS 进行查询。现在对于滞留包裹查询,快递公司需要第一时间提供 packinglist 和物品价值,所以为了效率查询包裹问题件,请按照我们的要求填写申请表发给我们。每次提交问题件时,也请不要重复提交之前发过的问题件。</p>
+            <p class="text-style-1">2. 包裹的 POD 可以在我司系统里进行查询和下载</p>
+        <p class="text-style-2 top-gap-2"><b><h4>二. 包裹索赔流程</h4></b></p>
+        </br>
+            <p><b>1. 上网前丢件</b></p>
+            <p class="text-style-1">货物在海关清关完成后会直接进入我司仓库,进行入库扫描、分拣、出库、装车、派送操作。
+            包裹有我司入库扫描记录,但没有上网信息,视为上网前丢件,我司将按照货物申报价值进行赔付,但最高赔付金额 200 USD/包裹。</p>
+            <p class="text-style-1">请客户以邮件方式发起查询,自收到查询邮件算起,30个自然日内无结果,我司按照此规则
+            赔偿,若后续找到包裹且与我司责任无关,我司保留追回赔偿的权利。</p>
+            <p><b>2. 上网后丢件</b></p>
+            <p class="text-style-1">包裹上网后,在派送过程中因非客户原因而发生的丢失,视为上网后丢件。</p>
+            <p class="text-style-1">对于有上网信息,但在 30 个自然日还未妥投的包裹,请客户填写<span class="text-danger">《FBA专线-包裹查询申请表》</span>并以邮件方式发到邮箱 <span class="text-info">service.fba@mypost4u.com</span> 。自收到此申请表算起,30 个自然日内我司将进行赔付,按照货物申报价值赔付,但最高赔付金额 200 USD/包裹。若后续找到包裹且与我司责任无关,我司保留追回赔偿的权利。</p>
+            <div class="gray-bg">
+            <p><b>属于下列情况的,我司不承担赔付责任</b></p>
+            <p class="text-style-1">1. 由于不可抗拒外力造成的损失,如: 战争、暴乱、自然灾害及他国政治乱动等原因。</p>
+            <p class="text-style-1">2. 包裹内物品部分遗失、包裹延误或者包裹破损均不赔付。</p>
+            <p class="text-style-1">3. 由于客户的责任造成的包裹损失,比如:不妥善的包装;提供的快件地址和信息错误而造
+            成无法投递、错投;包裹没有粘贴快递公司运单;包裹运单粘贴不妥造成单证脱落等。</p>
+            <p class="text-style-1">4. 包裹内的物品违反禁寄或限寄规定的。</p>
+            <p class="text-style-1">5. 超过查询期(从有上网记录算起)90个自然日未提出赔偿要求的。</p>
+            </div>
+            </div>
+        </div>
+    </div>
+ </article>
+
+    </div>
+</body>
+    
+ 
+    
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+         <%= javascript_include_tag 'wechat/milk_brand', 'data-turbolinks-track' => true %>
+         <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+         <%if flash[:notice].present?%>
+                            <div id="error_explanation" class="alert alert-warning" style="margin:0px">
+                                <h5><%=flash[:notice]%> </h5>
+                            </div>
+        <%end%>
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/naifen.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title text-pink">奶粉专线包裹信息</p>
+                <p class="pull-left col-12 header-sub-title">包税快件服务：2步下单，简单快捷</p>
+            </div>
+        </div>
+
+        <div class="clearfix bg-pure top-gap-1">
+            <div class="bar">
+                <div class="bar-item col-7 pull-left">
+                   <span class="bar-item-title" style="font-size:16px">1.添加商品到包裹中</span>
+                </div>
+                <div class="bar-item col-12 pull-left top-gap-1">
+                    <p class="bar-item-des">提示：为了您的包裹顺利清关，请准确添加每一种商品，所有商品必须原盒包装不得拆封。</p>
+                    <p class="bar-item-des">该产品最多可添加3种商品。</p>
+                </div>
+            </div>
+            <%= form_tag wechat.parcel_add_commodity_nfzx_path, method: "post",name: "add-ml-form"  do %>
+            <div class="bar">
+                <div class="bar-item col-12 pull-left">
+                <%=select_tag 'brand', options_for_select(["请选择品牌"] + UtilsFunction::GOODSBRAND, ""), onchange:'changeBrand(this);', class: "bar-item-input",style:"border: 1px solid #B2AEB3;border-radius: 2px;padding-left: 6px;height: 30px;color: #888;"%>
+                </div>
+                <div class="bar-item col-12 pull-left top-gap-1">
+                    <%=select_tag 'category', options_for_select(["请选择名称"]), onchange:'getCurrentValue();', class: "bar-item-input",style:"border: 1px solid #B2AEB3;border-radius: 2px;padding-left: 6px;height: 30px;color: #888;" %>
+                </div>
+
+                <div class="bar-item col-6 pull-right text-right top-gap-1">
+                    <button type="button" class="btn btn-block btn-style-pink" id="add-submit">添加</button>
+                </div>
+            </div>
+            <%end%>
+    <%=form_tag parcel_order_list_path, method: "post", name: "nfzx-form" do%>
+            <%=hidden_field_tag "rank", @rank%>
+            <%=hidden_field_tag "shpmt_product", "NFZX"%>
+            <%if @info.present?&&@info.size>0%>
+                            <%k=1%>
+                            <div id="tip" style="color:red;padding-left:15px"><%=session[:tip]%></div>
+                            <%@info.each do |ml|%>
+                                           <div class="bar">
+                                                <div class="bar-item col-10 pull-left">
+                                                   <p><span class="bar-item-title"><%=ml["name"]%></span></p>
+                                                   <p><span class="bar-item-title"><%=ml["commodityBarcode"]%></span></p>
+                                                   <p><span class="bar-item-title" style="font-size: 18px">€<%=ml["pricePerUnit"]%></span></p>
+                                                </div>
+                                                <div class="bar-item col-2 pull-left text-right">
+                                                    <p><%=link_to parcel_delete_ml_path(goodsCategory: ml["goodsCategory"],rank: @rank) do%><span class="bar-item-title" style="color:red">删除</span><%end%></p>
+                                                    <p><span class="bar-item-title light">&nbsp;</span></p>
+                                                    <p><span class="bar-item-title light">
+                                                                <input type="number" name="<%=ml["goodsCategory"]%>_num" class="text-center form-control input-number rls-cookies rls-num rls-commodity"  id="<%=k%>" min="1" value="<%=ml["quantity"].present? ? ml["quantity"] : 1%>" style="width: 100% !important;">
+                                                    </span></p>
+                                                </div>
+                                           </div>
+                            <%end%>
+
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">
+                   <span class="bar-item-title">包邮包税价格</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title total-amount" id="price">€<%=session[:nfzx_price]%></span>
+                </div>
+            </div>
+            <%end%>
+        </div>
+
+        <div class="clearfix bg-pure top-gap-1">
+             <div class="bar">
+                <div class="bar-item col-12 pull-left">
+                   <span class="bar-item-title" style="font-size:16px;">2.填写收件人和寄件人地址</span>
+                </div>
+                <!--btns block-->
+                <% if  !@rcpt.present? %>
+                    <div class="bar-item col-6 pull-left top-gap-1">
+                            <%=link_to wechat.active_address_add_recipient_address_path(type:"nfzx_new"),class:"btn btn-block btn-style-orange",style:"width: 95%" do %>添加收件人地址<%end%>
+                    </div>
+                <% end %>
+                <% if  !@sndr.present? %>
+                    <div class="bar-item col-6 pull-right top-gap-1">
+                            <%=link_to wechat.active_address_add_sender_address_path(type:"nfzx_new"), class:"btn btn-block btn-style-orange",style:"width: 95%; margin-left:5%;" do %>添加寄件人地址<%end%>
+                    </div>
+                <% end %>
+
+                <div class="clearfix"></div>
+                <!--btns block-->
+            </div>
+            <%if @rcpt.present?%>
+                <%=hidden_field_tag 'rcpt_id', @rcpt.id%>
+                <%=hidden_field_tag 'rcpt_name', @rcpt.name%>
+                <%=hidden_field_tag 'rcpt_tele', @rcpt.telephone%>
+                <%=hidden_field_tag 'rcpt_address', @rcpt.getInfo["address_combine"]%>
+                <%=link_to wechat.active_address_rcpt_select_path do %>
+                    <div class="bar" style="padding-bottom: 25px">
+                        <div class="bar-item col-3 pull-left">
+                            <span class="bar-item-title soft"><%=@rcpt.name%></span>
+                            <div><span class="default-address">收件人</span></div>
+                        </div>
+                        <div class="bar-item col-8 pull-left">
+                            <p class="bar-item-title block soft"><%=@rcpt.telephone%></p>
+                            <p class="bar-item-title block soft"><%=@rcpt.getInfo["address_combine"]%></p>
+                        </div>
+                    </div>
+                <%end%>
+            <%end%>
+
+
+            <%if @sndr.present?%>
+                <%=hidden_field_tag 'sndr_id', @sndr.id%>
+                <%=hidden_field_tag 'sndr_name', @sndr.name%>
+                <%=hidden_field_tag 'sndr_address', @sndr.getInfo["address_combine"]%>
+                <%=link_to wechat.active_address_sndr_select_path do %>
+                    <div class="bar" style="padding-bottom: 25px">
+                        <div class="bar-item col-3 pull-left">
+                            <span class="bar-item-title soft"><%=@sndr.name%></span>
+                            <div><span class="default-address">寄件人</span></div>
+                        </div>
+                        <div class="bar-item col-8 pull-left">
+                            <p class="bar-item-title block soft"><%=@sndr.telephone%></p>
+                            <p class="bar-item-title block soft"><%=@sndr.getInfo["address_combine"]%></p>
+                        </div>
+                    </div>
+                <%end%>
+            <%end%>
+        </div>
+
+        <div class="scroll-attachment double"></div>
+
+        <div class="footer bg-pure">
+            <button class="btn btn-success btn-block" id="nfzx-submit" type="button">提交包裹</button>
+            <%=link_to wechat.weixin_home_path do %><button type="button" class="btn btn-default btn-block">返回</button><%end%>
+        </div>
+    <%end%>
+        <script>
+              $(function(){
+                            $("#add-submit").click(function(){
+                                var count = $(".rls-commodity").length
+                                 if(count==3){
+                                      alert("商品种类不能超过3\n");
+                                    }else{
+                                        $("form[name='add-ml-form']").submit();
+                                    }
+                             })
+
+                        $(".rls-commodity").validate( { test:[{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/^\d+$/, message:"必须输入整数"}] });
+                    $(".rls-commodity").on("input", function () {
+                                 var quantity=$(this).val()
+                                if(quantity !== '' && parseInt(quantity) > 0){
+                                           var name=$(this).prop('name')
+                                           var goodsCategory=name.split("_")[0]
+                                           var rank=document.getElementById("rank").value
+                                           $.ajax({
+                                           url:"/wechat/parcel/change_quantity",
+                                           method:"post",
+                                           data:{rank: rank, goodsCategory: goodsCategory, quantity: quantity},
+                                           success: function(data) {
+                                                         var d=eval(data);
+                                                         if(d.status=='success'){
+                                                                        if(d.msg==""){
+                                                                                      var price="€"+d.price;
+                                                                                      document.getElementById("price").innerHTML=price;
+                                                                                      document.getElementById("tip").innerHTML=""
+                                                                                      document.getElementById("tip").style.display = "none"
+                                                                        }
+                                                                        else{
+                                                                                      document.getElementById("tip").style.display = "block"
+                                                                                      document.getElementById("tip").innerHTML=d.msg
+                                                                        }
+                                                         }
+                                           }
+                                           });
+                             }
+                    })
+                        $("#nfzx-submit").click(function(){
+                                    event.preventDefault()
+                                    var first = $(".rls-commodity").length
+                                    var second= document.getElementById("tip").innerHTML==""
+                                    var third=$(".default-address").length==2
+                                    var error = ""
+
+                                    first ? '' :  error += "商品种类不能小于1 \n"
+                                    second ? '' : error += "超出奶粉净重上线, 请修改商品信息\n"
+                                    third ? '' : error += "收件人或寄件人地址不能为空\n"
+                                    $(".form-item input, .form-item select,.rls-commodity").validate("test")
+                                    if($(".alert-panel").length!==0){
+                                      $("html,body").scrollTop($(".alert-panel").first().offset().top-120);
+                                    }else if(error){
+                                        alert(error)
+                                    }else{
+                                        $("form[name='nfzx-form']").submit();
+                                    }
+                         })
+
+
+              })
+       </script>
+
+    </body>
+</html>

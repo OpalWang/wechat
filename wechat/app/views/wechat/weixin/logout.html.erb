@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>退出登录</title>
+		<!--css-->
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+		  <%= stylesheet_link_tag    'wechat/login'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'http://res.wx.qq.com/open/js/jweixin-1.0.0.js', 'data-turbolinks-track' => true %>
+	</head>
+	<body> 
+		<%if flash[:alert]=="未绑定 EuropeTime 帐号, 请先绑定 !"%>
+	       		<div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:200px">请先登录 !</div>
+	             <%else%>
+	       		<%if flash[:alert].present?%>
+				<div id="error_explanation" class="alert alert-info">
+					<%=flash[:alert]%>
+				</div>
+			<%end%>
+			<div id ="login_top"></div>
+
+		           	<div id="bm_login_page">  
+		           		<%= form_tag(weixin_sign_out_path, :method => "post") do %>
+				<div class="login_border">
+				        	<div class="login_panel" style="height:300px">
+						       	<div class="auto_count_down">
+						       请选择要退出的帐号: </div>
+						       	<div id ="new_box">
+						       		<img src="/assets/wechat/account_logo.png">
+						      		<%= select_tag('user_id', options_for_select(@user_hash, ''), class:"select_unbind",style:"width: 220px; background-color:#fff;") %>
+						     		
+					     		</div>
+					            		<input type="submit" value="确认" class="btn" />
+				             </div>
+
+				</div>
+				<%end%>
+		
+	            		</div>
+	            <%end%>
+	</body>
+	
+</html>

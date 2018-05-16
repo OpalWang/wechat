@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/shangpingxinxi.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title">预览订单</p>
+                <p class="pull-left col-12 header-sub-title">订单提交后将无法修改，如需修改，需新建订单</p>
+            </div>
+        </div>
+        <%=form_tag parcel_postal_create_path, method: "post", name: "ygbs-form" do%>
+        <div class="clearfix bg-pure top-gap-1">
+            <div class="bar">
+                <div class="bar-item col-3 pull-left">          
+                   <p><span class="bar-item-title light">收货人：</span></p>
+                   <p><span class="bar-item-title light">收货地址：</span></p>
+                </div>
+                <div class="bar-item col-8 pull-left">          
+                   <p><span class="bar-item-title"><%=session[:rcpt_name]%> &nbsp;&nbsp; <%=session[:rcpt_tele]%></span></p>
+                   <p><span class="bar-item-title"><%=session[:rcpt_address]%></span></p>
+                </div>
+                <div class="bar-item col-1 pull-left text-right">
+                    <span class="bar-item-icon" style="top:-1px"></span>
+                </div>
+            </div>
+        </div>
+              <%if session[:shpmt_product]=="阳光包税专线"%>
+                            <%@info.each do |ci| %>
+                            <div class="clearfix bg-pure top-gap-1">
+                                <div class="bar">
+                                    <div class="bar-item col-10 pull-left">          
+                                       <p><span class="bar-item-title"><%=ci["name"]%></span></p>
+                                       <p><span class="bar-item-title"><%=ci["barcode"]%></span></p>
+                                       <p><span class="bar-item-title">¥<%=BigDecimal.new(sprintf("%.2f",ci["declare_rmb_price"]))%></span></p>
+                                    </div>
+                                    <div class="bar-item col-2 pull-left text-right">
+                                        <p><span class="bar-item-icon" style="top:-1px"></span></p>
+                                        <p><span class="bar-item-title light">&nbsp;</span></p>
+                                        <p><span class="bar-item-title light">x<%=ci["quantity"].present? ? ci["quantity"] : 1%></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <%end%>
+              <%elsif session[:shpmt_product]=="NFZX"%>  
+                            
+                            <%session[:ml_info].each do |ml|%>
+                                           <div class="clearfix bg-pure top-gap-1">
+                                           <div class="bar">
+                                                <div class="bar-item col-10 pull-left">          
+                                                   <p><span class="bar-item-title"><%=ml["name"]%></span></p>
+                                                   <p><span class="bar-item-title"><%=ml["commodityBarcode"]%></span></p>
+                                                   <p><span class="bar-item-title" style="font-size: 18px">€<%=ml["pricePerUnit"]%></span></p>
+                                                </div>
+                                                <div class="bar-item col-2 pull-left text-right">
+                                                    <p><span class="bar-item-icon" style="top:-1px"></span></p>
+                                                    <p><span class="bar-item-title light">&nbsp;</span></p>
+                                                    <p><span class="bar-item-title light">
+                                                                x<%=ml["quantity"].present? ? ml["quantity"] : 1%>
+                                                    </span></p>
+                                                </div>
+                                           </div>
+                                           </div>
+                            <%end%>
+              <%end%>         
+
+        <div class="clearfix bg-pure top-gap-1">
+            <%if session[:shpmt_product]=="阳光包税专线"%>
+            <div class="bar">
+                <div class="bar-item col-10 pull-left">          
+                   <span class="bar-item-title light">重<%=session[:weight]%>kg, 包裹长<%=session[:length]%>cm,宽<%=session[:width]%>cm,高<%=session[:height]%>cm</span>
+                </div>
+                
+            </div>
+            <div class="bar">
+                <div class="bar-item col-10 pull-left">          
+                   <span class="bar-item-title light">运费</span>
+                </div>
+                <div class="bar-item col-2 pull-left text-right">
+                    <span class="bar-item-title light">€<%=session[:fare]%></span>
+                </div>
+            </div>
+            <div class="bar">
+                <div class="bar-item col-10 pull-left">          
+                   <span class="bar-item-title light">税金</span>
+                </div>
+                <div class="bar-item col-2 pull-left text-right">
+                    <span class="bar-item-title light">€<%=session[:tax]%></span>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">          
+                   <span class="bar-item-title light">订单应付金额</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title total-amount">€<%=session[:price]%></span>
+                </div>
+            </div>
+            <%elsif session[:shpmt_product]=="NFZX"%>
+                            <div class="bar">
+                                <div class="bar-item col-8 pull-left">          
+                                   <span class="bar-item-title light">订单应付金额</span>
+                                </div>
+                                <div class="bar-item col-4 pull-left text-right">
+                                    <span class="bar-item-title total-amount">€<%=session[:nfzx_price]%></span>
+                                </div>
+                            </div>
+            <%end%>
+        </div>
+
+        <div class="scroll-attachment double"></div>
+
+        <div class="footer bg-pure">
+            <button type="submit" class="btn btn-success btn-block">提交订单</button>
+            <%if session[:shpmt_product]=="阳光包税专线"%>
+                            <%=link_to wechat.parcel_ygbs_new_path do%>
+                                          <button type="button" class="btn btn-default btn-block">修改订单</button>
+                            <%end%>
+              <%elsif session[:shpmt_product]=="NFZX"%>
+                            <%=link_to parcel_nfzx_new_path do%>
+                                          <button type="button" class="btn btn-default btn-block">修改订单</button>
+                            <%end%>
+              <%end%>
+        </div>
+        <%end%>
+    </body>
+</html>

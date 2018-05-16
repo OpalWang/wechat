@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>EuropeTime物流来了</title>
+		<!--css-->
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		
+	</head>
+
+	<body>
+	<img src="/assets/wechat/share.jpg" alt="操作流程图" style="width:100%">
+
+
+	<div style="position:relative">
+		<img src="/assets/wechat/5.png" alt="操作流程图" style="width:100%">
+		<div class="findus">
+			<div class="findus-search">
+				<p>点击网址进入官网</p>
+				<div class="search-block">
+					<div class="title-wechat">www.mypost4u.com</div>
+					<a class="button" href="http://www.mypost4u.com">
+						<img src="/assets/wechat/GO!.png">
+					</a>
+					<div class="click">
+						<img src="/assets/wechat/finger.png" style="width:30px">
+					</div>
+				</div>
+				<div class="qrcode-block">
+					<div class="qr-title">扫描图中二维码并关注</div>
+					<img src="/assets/wechat/qrcode_abstract.png" style="    margin-top: 30px;width:178px;">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	</body>
+</html>
+<style>
+ .findus {
+    position: absolute;
+    top: 27%;
+    padding: 0 12%;
+    width: 100%;
+}
+.findus-search>p{
+    font-size: 20px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+}
+.search-block {
+    padding: 30px 0px;
+        position: relative;
+}
+.search-block>.title-wechat {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    float: left;
+    width: 70%;
+    font-weight: bold;
+}
+.search-block>.button {
+    float: left;
+    background-color: #7ED321;
+    padding: 5px;
+    border: 1px solid #333;
+}
+.search-block>.click {
+    position: absolute;
+    left: 73%;
+    top: 54px;
+}
+.qr-title{
+    font-size: 20px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+}
+.qrcode-block {
+    margin-top: 30px;
+    /* margin-bottom: 20px; */
+}
+</style>

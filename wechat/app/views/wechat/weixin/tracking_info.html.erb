@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+             <head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1" >
+                            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                            <title>物流信息</title>
+                            <!--css-->
+                            <%= stylesheet_link_tag    'bootstrap.min'%>
+                              <%= stylesheet_link_tag    'wechat/style'%>
+                            <%= stylesheet_link_tag    'wechat/parcel'%>
+                            <!--js-->
+                            <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+                            <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+             </head>
+
+             <body >
+                            <div id="tracking_info">
+                                            <div id="parcel_list">
+                                            <%if @parcel.present?%>
+                                                        <table class="table">
+                                                                        <tbody>
+                                                                                    <tr>
+                                                                                                    <td class="first">运单号</td>
+                                                                                                    <td class="first"><%=@parcel["ishpmt_num"] || "暂无运单号"%></td>
+                                                                                          
+                                                                                     </tr>
+                                                                                     <tr>
+                                                                                                    <td class="first">包裹单号</td>
+                                                                                                    <td class="first"><%=@parcel["parcel_num"] %></td>
+
+                                                                                     </tr>
+                                                                       </tbody>
+                                                        </table>
+
+                                                        <div id="container">
+                                                                      <div class="row padding-1 block bottom-gap-2">
+                                                                                    <%if @ptis.present?%>
+                                                                                                  <%@ptis.reverse_each do |time,tracking_info|%>
+                                                                                                        <div class="col-xs-12 check-point">
+                                                                                                            <div class="row">
+                                                                                                                <div class="date col-xs-4 col-sm-2"><span class="time"><%=tracking_info_analysis(time,tracking_info)[0].to_s.split(" ")[1]%></span><br/> <%=tracking_info_analysis(time,tracking_info)[0].to_s.split(" ")[0]%></div>
+                                                                                                                <div class="location col-xs-8 col-sm-10"><%=tracking_info_analysis(time,tracking_info)[1]=="system parcel created" ||tracking_info_analysis(time,tracking_info)[1]=="system create parcel info from API"? "包裹创建成功" : tracking_info_analysis(time,tracking_info)[1]%></div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                  <%end%>
+                                                                                    <%else%>
+                                                                                        <div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:40px">未找到相关物流信息</div>
+                                                                                    <%end%>
+                                                                        <div class="clearfix"></div>
+                                                                        </div>
+                                                         </div>
+                                            <%else%>
+                                                        <div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:40px">未找到相关包裹</div>
+                                            <%end%>
+                                           </div>  
+                            </div>
+             </body>
+    
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/shangpingxinxi.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title">订单列表</p>
+                <p class="pull-left col-12 header-sub-title">请仔细核对订单信息</p>
+            </div>
+        </div>
+
+        <div class="clearfix bg-pure top-gap-1">
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">          
+                   <span class="bar-item-title light">收件人</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title light"><%=session[:rcpt_name]%></span>
+                </div>
+            </div>
+            <%if session[:shpmt_product]=="阳光包税专线"%>
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">          
+                   <span class="bar-item-title light">包裹计费重量</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title light"><%=session[:weight]%>kg</span>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">          
+                   <span class="bar-item-title light">运费</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title light">€<%=session[:fare]%></span>
+                </div>
+            </div>
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">          
+                   <span class="bar-item-title light">税金</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title light">€<%=session[:tax]%></span>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-item col-8 pull-left">          
+                   <span class="bar-item-title light">订单应付金额</span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title total-amount">€<%=session[:price]%></span>
+                </div>
+            </div>
+            <%elsif session[:shpmt_product]=="NFZX"%>
+                            <div class="bar">
+                                <div class="bar-item col-8 pull-left">          
+                                   <span class="bar-item-title light">包裹计费重量</span>
+                                </div>
+                                <div class="bar-item col-4 pull-left text-right">
+                                    <span class="bar-item-title light"><%=session[:nfzx_weight]%>kg</span>
+                                </div>
+                            </div>
+                            <div class="bar">
+                                <div class="bar-item col-8 pull-left">          
+                                   <span class="bar-item-title light">订单应付金额</span>
+                                </div>
+                                <div class="bar-item col-4 pull-left text-right">
+                                    <span class="bar-item-title total-amount">€<%=session[:nfzx_price]%></span>
+                                </div>
+                            </div>
+            <%end%>
+        </div>
+
+        <div class="scroll-attachment"></div>
+
+        <div class="footer bg-pure">
+            <%=link_to wechat.parcel_order_preview_path do%>
+                <button class="btn btn-success btn-block">预览包裹</button>
+            <%end%>
+        </div>
+
+    </body>
+</html>

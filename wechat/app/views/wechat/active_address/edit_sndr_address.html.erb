@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/tianjiajijianren.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title">编辑寄件人信息</p>
+                <p class="pull-left col-12 header-sub-title">所有信息填写完后请仔细核对</p>
+            </div>
+        </div>
+
+        <% if flash[:notice] %>
+                            <div id="error_explanation" class="alert alert-danger">
+                                <%flash[:notice].each do |err| %>
+                                <h5><%= err %> </h5>
+                            <%end%>
+                            </div>
+              <% end %>
+              <%=form_tag active_address_update_sndr_address_path(id: @address.id), method: "post", name: "sndr-form" do%>
+
+            <div class="clearfix bg-pure top-gap-1">
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">寄件人</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('name', @address.nil? ? "" : @address.name, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">联系电话</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('telephone', @address.nil? ? "" : @address.telephone, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">Email</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= email_field_tag('email', @address.nil? ? "" : @address.email, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">国家</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%=select_tag 'country', options_for_select([['德国','de']], @address.nil? ? "" : @address.country), class: "bar-item-input", data: {width: '100%'} %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">城市</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('city', @address.nil? ? "" : @address.city, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">街道</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('street', @address.nil? ? "" : @address.street, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">门牌号</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('house_num', @address.nil? ? "" : @address.house_num, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">邮编</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('postcode', @address.nil? ? "" : @address.postcode, class:"bar-item-input") %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clearfix top-gap-2">
+                <div class="col-1 pull-left text-center">          
+                    <%= check_box_tag 'default_flag',true,@address.nil? ? "" : @address.default_flag%>
+                </div>
+                <div class="col-11 pull-right bar-item-title light">
+                    设为默认地址
+                </div>
+            </div>
+
+            <div class="scroll-attachment"></div>
+
+            <div class="footer bg-pure">
+                <button class="btn btn-success btn-block" id="sndr-submit">保存地址</button>
+            </div>
+
+        <%end%>
+
+    </body>
+    <script >
+    $(function () {
+                $("#name").validate({ 
+                    test:[{case:"nonzero",message:"不能为空"},
+                    {case:"reg",reg:/^[a-zA-Z ÄäÖöÜü&ß]{1,30}$/,message:"寄件人名称不能超过30位，只能允许英文、德文、&和空格键盘输入"}]
+                })
+                $("#city").validate({ 
+                    test:[{case:"nonzero",message:"不能为空"},
+                    {case:"reg",reg:/^[a-zA-ZÄäÖöÜüß][a-zA-Z ÄäÖöÜüß-]{0,24}$/,message:"寄件人城市名不能超过25位，首位只能是字母（英文与德文），只能由字母（英文与德文）、- 、空格组成"}]
+                })
+                $("#street").validate({ 
+                    test:[{case:"nonzero",message:"不能为空"},
+                    {case:"reg",reg:/^[\wÄäÖöÜüß.-][\w ÄäÖöÜüß.-]{0,29}$/,message:"寄件人街道不能超过30位，只能由字母（英文与德文）、.、-、数字和空格组成，且开头不能有空格"}] 
+                })
+                $("#house_num").validate({ 
+                    test:[{case:"nonzero",message:"不能为空"},
+                     {case:"reg",reg:/^[\d][\wÄäÖöÜüß.-]{0,4}$/,message:"寄件人门牌号不能超过5位，必须以数字开头，只能包含字母、数字、.和-字符"}]
+                })
+                $("#email").validate({ 
+                    test:[
+                        {case:"nonzero",message:"不能为空"},
+                        {case:"reg", reg:/^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/, message:"邮箱格式错误"}
+                    ] 
+                })
+                $("#postcode").validate({ 
+                    test:[{case:"nonzero",message:"不能为空"},
+                            {case:"reg",reg:/^[0-9]{5}$/,message:"德国地区邮编必须为5位，东德4位邮编的地区请在前面加0"}]
+                })
+                $("#telephone").validate({ 
+                    test:[{case:"nonzero",message:"不能为空"}] 
+                })
+                $("#sndr-submit").click(function(){
+                    event.preventDefault();
+                    $(".form-item input, .form-item select").validate("test");
+                    if($(".alert-panel").length!==0){
+                      $("html,body").scrollTop($(".alert-panel").first().offset().top-120);
+                    }else{
+                    $("form[name='sndr-form']").submit();
+                    }
+                })
+     })
+    </script>
+</html>

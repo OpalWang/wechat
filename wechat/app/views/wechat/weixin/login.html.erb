@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+
+             <head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1" >
+                          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                           <title>登录</title>
+                           <!--css-->
+                           <%= stylesheet_link_tag    'bootstrap.min'%>
+                           <%= stylesheet_link_tag    'wechat/style'%>
+                           <%= stylesheet_link_tag    'wechat/login'%>
+                           <!--js-->
+                           <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+             </head>
+
+            <body>
+                           <% if flash[:login] %>
+                                        <div id="error_explanation" class="alert alert-danger">
+                                                      <h5><%= flash[:login] %> </h5>
+                                        </div>
+                           <%elsif flash[:info]%>
+                                        <div id="error_explanation" class="alert alert-danger">
+                                                      <h5><%= flash[:info] %> </h5>
+                                        </div>
+                           <% end %>
+                
+                           <div id ="login_top"></div>
+
+                           <div id="bm_login_page">  
+                          <%= form_tag(weixin_sign_in_path,method:"post",:class => "clearfix") do %>     
+                                        <div class="login_border">
+                                                      <div class="login_panel">
+                                                                    <div id="new_box">
+                                                                                 <img src="/assets/wechat/account_logo.png">
+                                                                                 <%= text_field_tag "email","", id: "username", autofocus: true, placeholder: "输入注册帐号",class:"inline_text"%>
+                                                                    </div>
+                                                                    <div id ="new_box">
+                                                                                 <img src="/assets/wechat/passwd_logo.png">
+                                                                                 <%= password_field_tag "password","", id:"password", autocomplete: "off", placeholder:"输入密码", class:"inline_text"%>
+                                                                    </div>
+                                                                    <div id ="new_box">
+                                                                                 <img src="/assets/wechat/business_logo.png">
+                                                                                 <%= select_tag('server', options_for_select([['',''],['MYPOST4U(欧中个人包裹业务)','overseas'],['FBA(中欧电商包裹业务)','domestic']], ''), class:"select_unbind",style:"width: 220px; background-color:#fff;") %>
+                                                                    </div>
+                                                                    <input type="submit" value="登录" class="btn" /> 
+                                                      </div>
+                                        </div>
+                           <% end %>
+                           </div>
+            </body>
+    
+</html>

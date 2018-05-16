@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>自动跳转</title>
+        <!--css-->
+         <%= stylesheet_link_tag    'bootstrap.min'%>
+          <%= stylesheet_link_tag    'wechat/style'%>
+           <%= stylesheet_link_tag    'wechat/login'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'http://res.wx.qq.com/open/js/jweixin-1.0.0.js', 'data-turbolinks-track' => true %>
+        
+            <script type="text/javascript">
+            function f_close(){
+                    if(typeof(WeixinJSBridge)!="undefined"){
+                        WeixinJSBridge.call('closeWindow');
+                    }else{
+                        if (navigator.userAgent.indexOf("MSIE") > 0) {  
+                            if (navigator.userAgent.indexOf("MSIE 6.0") > 0) {  
+                                window.opener = null; window.close();  
+                            }  
+                            else {  
+                                window.open('', '_top'); window.top.close();  
+                            }  
+                        }  
+                        else if (navigator.userAgent.indexOf("Firefox") > 0) {  
+                            window.location.href = 'about:blank ';  
+                            //window.history.go(-2);  
+                        }  
+                        else {  
+                            window.opener = null;   
+                            window.open('', '_self', '');  
+                            window.close();  
+                        }
+                    }
+                }
+
+            function delay() {
+        var delay = document.getElementById("time").innerHTML;
+        if(delay > 0) {
+            delay--;
+            document.getElementById("time").innerHTML = delay;
+        } else {
+            f_close();
+        }
+        setTimeout("delay()",1000);
+        }   
+        </script>
+    </head>
+
+    <body>
+        <div id ="login_top"></div>
+        </br>
+        <div id="bm_login_page">  
+           <div class="circle">
+            <img src="/assets/wechat/ren2.png">
+           </div>
+
+            <div class="login_border">
+                <div class="login_panel">
+               
+                    <div class="main_alert">退出成功 !</div>
+                    
+                    <div class="auto_count_down"><span id="time">5</span>秒后回到对话页面</div>
+        
+                     <script type="text/javascript">
+                delay();
+                    </script>
+                
+
+                    </div>
+                </div>
+            </div>
+
+</body>
+    
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/tianjiajijianren.png">
+            </div>
+            <div class="col-7 pull-left" style="padding-top:13px;">
+                <p class="pull-left col-7 header-title">寄件人信息</p>
+            </div>
+            <div class="col-3 pull-left text-right top-gap-1">
+            <%=link_to wechat.active_address_sender_address_info_path,class:"btn btn-primary btn-sm"  do%>
+            管理
+                <%end%>
+            </div>
+            
+        </div>
+              <%if @sdr_adrs.present?%>
+                            <div class="clearfix bg-pure top-gap-1">
+                            <%@sdr_adrs.each do |sender|%>
+                                          <%=link_to wechat.active_address_reset_sndr_address_path(sndr_id: sender.id) do%>
+                                           <div class="bar" style="padding-bottom: 25px">
+                                                         <div class="bar-item col-3 pull-left">          
+                                                            <span class="bar-item-title soft"><%=sender.name%></span>
+                                                            <%if sender.default_flag==true%>
+                                                            <div><span class="default-address">默认</span></div>
+                                                            <%end%>
+                                                         </div>
+                                                         <div class="bar-item col-8 pull-left">
+                                                            <p class="bar-item-title block soft"><%=sender.telephone%></p>
+                                                            <p class="bar-item-title block soft"><%=sender.getInfo["address_combine"]%></p>
+                                                         </div>
+                                           </div>
+                                           <%end%>
+                            <%end%>
+                            </div>
+              <%end%>
+
+    </body>
+</html>

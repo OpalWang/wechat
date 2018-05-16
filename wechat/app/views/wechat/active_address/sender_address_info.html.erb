@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <script src="http://hammerjs.github.io/dist/hammer.min.js"></script>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/tianjiajijianren.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:13px;">
+                <p class="pull-left col-12 header-title">寄件人信息</p>
+                <p class="pull-left col-12 header-sub-title">左滑删除寄件人</p>
+            </div>
+        </div>
+              <% if flash[:notice] %>
+                            <div id="error_explanation" class="alert alert-danger">
+                                          <h5><%= flash[:notice] %> </h5>
+                            </div>
+              <%end%>
+              <%if @sdr_adrs.present?%>
+                            <div class="clearfix bg-pure top-gap-1">
+                            <%@sdr_adrs.each do |sender|%>
+
+                                           <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;">
+                                                         <div class="bar-item col-3 pull-left">          
+                                                            <span class="bar-item-title soft"><%=sender.name%></span>
+                                                            <%if sender.default_flag==true%>
+                                                            <div><span class="default-address">默认</span></div>
+                                                            <%end%>
+                                                         </div>
+                                                         <div class="bar-item col-8 pull-left">
+                                                            <p class="bar-item-title block soft"><%=sender.telephone%></p>
+                                                            <p class="bar-item-title block soft"><%=sender.getInfo["address_combine"]%></p>
+                                                         </div>
+                                                         <div class="bar-item col-1 pull-left text-right">
+                                                          <%=link_to active_address_edit_sndr_address_path(id: sender.id), data: {ajax: "false"} do %>
+                                                                        <span class="bar-item-title light glyphicon glyphicon-edit"></span>
+                                                          <%end%>
+                                                         </div>
+                                                         <%=link_to "删除",active_address_delete_sndr_address_path(id: sender.id), class: 'bar-del', style: 'margin-top: -15px;', data: {ajax: "false"}%>
+                                           </div>
+                            <%end%>
+                            </div>
+              <%end%>
+        <div class="clearfix" style="margin-bottom:50px"></div>
+        <div class="footer bg-pure">
+            <div class="text-center">
+               <img src="/assets/wechat/tianjiajian.png">
+               <%=link_to active_address_add_sender_address_path,class:"new-address left-gap-1" do %>添加新地址<%end%>
+            </div>
+        </div>
+
+    </body>
+    
+    <script>
+      $(".bar-del").each(function () {
+        $(this).css('line-height', $(this).parent().css('height'))
+      })
+      $(".bar").each(function () {
+        var that = $(this)
+        var hammertime = new Hammer(this)
+        //hammertime.add(new Hammer.Pinch());
+        //hammertime.add(new Hammer.Rotate());
+        hammertime.on("swipeleft", function (e) {                    
+          that.find(".bar-del").addClass("show");
+          console.log(that)
+        });
+        hammertime.on("swiperight", function (e) {                    
+          that.find(".bar-del").removeClass("show");
+        });
+      })
+    </script>
+</html>

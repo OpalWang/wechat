@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>包裹列表</title>
+        <!--css-->
+        
+         <%= stylesheet_link_tag    'bootstrap.min'%>
+          <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/awb'%>
+        <%= stylesheet_link_tag 'jquery.datetimepicker' %>
+       
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'jquery.datetimepicker', 'data-turbolinks-track' => true %>
+    </head>
+
+    <body>
+           <div class="light-gray padding-15">          
+              <%if flash[:notice].present?%>
+                    <div id="error_explanation" class="alert alert-info">
+                        <%=flash[:notice]%>
+                    </div>
+              <%end%>
+               <div id="error_explanation" class="alert alert-danger" style="display:none"></div>
+                <%= form_tag(weixin_parcel_list_fba_path, :method => "get",:class=>"myform") do %>             
+                 <div class="flex">
+                    <div class="flex keep" style="width: 130px">
+                      <img src="/assets/wechat/sousuo.png">&nbsp;&nbsp;
+                      <span class="text-gray">输入需要查询的单号</span>
+                    </div>
+                    <div class="spacer text-center padding-5-ho">
+                      <%= text_field_tag('airwaybill_no', params[:airwaybill_no], class:"input-1",style:"display:inline-block; border:0px;") %> 
+                    </div>
+                    <div class="keep">
+                      <input type="submit" value="查询" class="btn-1 text-aqua border-aqua" />   
+                    </div>
+                </div>
+              <div class="flex top-gap-1">
+                <div class="flex keep" style="width: 130px">
+                      <img src="/assets/wechat/time_black.png">&nbsp;&nbsp;
+                      <span class="text-gray">查询的航班时间&nbsp;&nbsp;&nbsp;从</span>
+                </div>
+                <div class="spacer padding-5-ho">
+                      <%= text_field_tag('flight_time_begin', params[:flight_time_begin], class:"input-1 awbquerytimePicker",style:"display:flex") %>    
+                
+                      </div>
+                <div class="flex keep center-ho" style="width: 10px">
+                      <span class="text-gray">到</span>
+                </div>
+                <div class="spacer padding-5-ho">
+                      <%= text_field_tag('flight_time_end', params[:flight_time_end], class:"awbquerytimePicker input-1") %>    
+                </div>
+                <div class="keep">       
+                      <input type="submit" value="查询" class="btn-1 text-aqua border-aqua" />
+                </div>
+            </div>
+            <%end%>
+          </div>
+           <div id="order-list">
+    
+                <%if @airwaybills.present? %>
+
+                    <%@airwaybills.each do |awb|%>
+                        <div class="order" style="border-bottom: 1px solid #eee;">
+                            <div class="flex padding-10">
+                              <div class="flex keep" style="201px">
+                                <img src="/assets/wechat/awb_logo.png">&nbsp;&nbsp;
+                                <span class="text-aqua"><b>提单号 &nbsp; <%= awb.airwaybill_no != nil && awb.airwaybill_no != awb.app_no ? awb.airwaybill_no : '' %></b></span>
+                              </div>
+                              <div class="spacer text-center padding-10-ho">
+                                <span class="text-light"><%=awb.departure_port%>-<%=awb.landing_port%></span>
+                              </div>
+                              <div class="flex keep" style="width: 26px">
+                                <span class="text-light"><%=awb_type_desc(awb.parcel_type,awb.is_lkw)%></span>
+                              </div>
+                          </div>
+                          <div class="flex padding-10" style="padding-top: 0px">
+                              <div class="padding-20-ho">
+                                <span><b>ETA</b></span>
+                              </div>
+                              <div>
+                                <span><b><%=awb.teta.strftime("%Y-%m-%d %H:%M") if awb.teta.present?%></b></span>
+                              </div>
+                              <div class="spacer text-center padding-10-ho">
+                                <span class="text-light"><%=awb.contained_parcels.count%>CTNS</span>
+                              </div>
+                              <div class="flex keep" style="width: 50px">
+                                <span><b><%={"Cleared"=>"全部清关","Inspection"=>"清关中"}[awb.awb_status["clr_status"]]||"未清关"%></b></span>
+                              </div>
+                         </div>
+                      </div>
+
+
+                    <%end%> 
+
+                    <%= will_paginate @airwaybills, previous_label:"上一页", next_label:"下一页" %>
+
+            <%else%>
+                <div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:40px">未找到相关提单</div>
+             <%end%>
+                    
+          </div>
+          <script>
+          $(".datetimePicker").datetimepicker({
+            lang:"ch",
+            step:60,
+            allowBlank:true
+          });
+              $(".awbquerytimePicker").datetimepicker({
+                  lang:"ch",
+                  timepicker:false,
+                  allowBlank:true,
+                  format:'Ymd',
+                    onGenerate:function(){
+                      if($(window).width()<=390){
+                        $('.xdsoft_noselect')
+                            .addClass('display_small');
+                      }else{
+                        $('.xdsoft_noselect')
+                            .addClass('display_large');
+                    }
+                   }
+                });
+          
+        </script>
+    </body>
+    
+</html>
+    

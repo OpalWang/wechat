@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+      <%= render "header" %>
+
+
+        <%if !@wui%>
+         <div class="top-gap-1 clearfix">
+              <img src="/assets/wechat/tip.png">
+              <span class="font-light">包税发，十天达！</span>
+         </div>
+
+
+          <div class="clearfix" style="margin-top:3px">
+              <div class="featured-product" style="padding-right: 2.5px;">
+                   <a href="javascript:void(0)" onclick="tishi()"><img src="/assets/wechat/youyi.png"></a>
+              </div>
+              <div class="featured-product" style="padding-left: 2.5px;"> 
+                 <a href="javascript:void(0)" onclick="tishi()"><img src="/assets/wechat/zuoyi.png"></a>
+              </div>
+          </div>
+
+          <div class="top-gap-1 clearfix">
+              <div id="myCarousel" class="carousel slide">
+                  <ol class="carousel-indicators">
+                      <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                  </ol> 
+                  <div class="carousel-inner">
+                      <div class="item active">
+                          <div id="banner-9">
+                                  <img src="/assets/wechat/guanggao.png" class="max-img"/>
+                          </div>
+                      </div>  
+                  </div>
+                  <a class="carousel-control left" href="#myCarousel" data-slide="prev" ></a>
+                  <a class="carousel-control right" href="#myCarousel" data-slide="next"></a>
+              </div>
+          </div>
+
+            <div class="top-gap-1 clearfix reason-block">
+                <div class="reason-title">
+                    <img src="/assets/wechat/whyus.png">
+                </div>
+                <p class="reason-p">
+                    TIME物流主营欧洲与中国间的双向空运物流业务与进出口贸易业务，与DHL, 捷克邮政, EMS等国际物流巨头之间有常年合作经验。 
+                </p>
+                <p class="reason-p">
+                    我司已有十年以上物流经验，已转运上亿包裹顺利派送。提供市场最具竞争力的价格和性价比最高的服务一直是我们追求的目标。
+                </p>
+            </div>
+        <%else%>
+
+            <div class="clearfix bg-pure top-gap-1">
+                <div class="col-3 pull-left home-top4">
+                <%=link_to wechat.parcel_ygbs_new_path do%>
+                    <img  class="full-img" src="/assets/wechat/yangguang.png">
+                    <p style="text-align:center">阳光包税下单</p>
+                <%end%>
+                </div>
+                <div class="col-3 pull-left home-top4">
+                <%=link_to wechat.parcel_nfzx_new_path do%>
+                    <img  class="full-img" src="/assets/wechat/naifen.png">
+                    <p style="text-align:center">奶粉专线下单</p>
+                    <%end%>
+                </div>
+                <div class="col-3 pull-left home-top4">
+                <a href="http://mp.weixin.qq.com/mp/getmasssendmsg?__biz=MzI2MDU2OTA4Mw==&from=1#wechat_webview_type=1&wechat_redirect">
+                    <img  class="full-img" src="/assets/wechat/huodong.png">
+                    <p style="text-align:center">活动内容</p>
+                    </a>
+                </div>
+                <div class="col-3 pull-left home-top4">
+                    <%=link_to weixin_parcel_list_path do%>
+                    <img  class="full-img" src="/assets/wechat/baoguo.png">
+                    <p style="text-align:center">包裹列表</p>
+                    <%end%>
+                </div>
+            </div>
+
+            <div class="clearfix bg-pure top-gap-1">
+                <%=link_to weixin_parcel_search_path ,class:"bar" do%>
+                    <div class="bar-item col-10 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/baoguochaxun.png"></span>                    
+                        <span class="bar-item-title left-gap-2">包裹查询</span>
+                    </div>
+                    <div class="bar-item col-2 pull-right text-right">
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                <%end%>
+                
+                <%=link_to weixin_abstract_path ,class:"bar" do%>
+                    <div class="bar-item col-5 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/Group2.png"></span>
+                        <span class="bar-item-title left-gap-2">分享有礼</span>
+                    </div>
+                    <div class="bar-item col-7 pull-right text-right">
+                        <span class="bar-item-des">分享朋友圈赢取更多积分</span>
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                <%end%>
+                <%=link_to active_address_recipient_address_info_path ,class:"bar" do%>
+                    <div class="bar-item col-10 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/dizhiguanli.png"></span>
+                        <span class="bar-item-title left-gap-2">收件人地址管理</span>
+                    </div>
+                    <div class="bar-item col-2 pull-right text-right">
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                <%end%>
+                <%=link_to active_address_sender_address_info_path,class:"bar" do%>
+                    <div class="bar-item col-10 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/dizhiguanli.png"></span>
+                        <span class="bar-item-title left-gap-2">寄件人地址管理</span>
+                    </div>
+                    <div class="bar-item col-2 pull-right text-right">
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                <%end%>
+                <a class="bar" href="javascript:void(0)" onclick="credit_update()">
+                    <div class="bar-item col-5 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/jifen.png"></span>
+                        <span class="bar-item-title left-gap-2">我的积分</span>
+                    </div>
+                    <div class="bar-item col-7 pull-right text-right">
+                        <span class="bar-item-des" id="credit"><%=@wui.user_credit%></span>
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                </a>
+                
+                <%=link_to weixin_production_intr_path ,class:"bar" do%>
+                    <div class="bar-item col-10 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/chanpingjieshao.png"></span>
+                        <span class="bar-item-title left-gap-2">产品介绍</span>
+                    </div>
+                    <div class="bar-item col-2 pull-right text-right">
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                <%end%>
+                
+                <%=link_to weixin_logout_path ,class:"bar" do%>
+                    <div class="bar-item col-10 pull-left">
+                        <span class="bar-item-icon"><img  class="full-img"  src="/assets/wechat/Group3.png"></span>
+                        <span class="bar-item-title left-gap-2">退出登录</span>
+                    </div>
+                    <div class="bar-item col-2 pull-right text-right">
+                        <span class="bar-item-icon"><img src="/assets/wechat/Group5.png"></span>
+                    </div>
+                <%end%>
+            </div>
+        <%end%>  
+        <%= render "footer" %>
+        <script>
+                  function tishi(){
+                            alert("请先登录或者注册！")
+                  }
+        </script>
+    </body>
+</html>

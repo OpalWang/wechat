@@ -1,0 +1,25 @@
+ <header class="w-header clearfix">
+    <div class="w-avatar">
+        <img src="/assets/wechat/avatar.png">
+    </div>
+    <div class="w-header-content">
+        <%if @wui%>
+            <p>
+                欢迎，<%=@wui.user_nickname%>
+            </p>
+            <P>
+                    <%if @wui.user_rank=="platinum"%>
+                        白金会员
+                    <%elsif @wui.user_rank=="diamond"%>
+                        钻石会员
+                    <%else%>
+                        TIME会员
+                    <%end%>
+            </P>
+        <%else%>
+            <p>
+            <a href="/wechat/weixin/login">登录</a>／<a href="<%="#{Settings.wechat.call_remove_url}/users/sign_up?wechat=y"%>">注册</a>
+            </p>
+        <%end%>
+    </div>
+</header>

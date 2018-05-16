@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+
+             <head>
+                           <meta name="viewport" content="width=device-width, initial-scale=1" >
+        		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                           <title>支付</title>
+                           <!--css-->
+                                <%= stylesheet_link_tag    'bootstrap.min'%>
+		        <%= stylesheet_link_tag    'wechat/style'%>
+		        <%= stylesheet_link_tag    'wechat/framework'%>
+                           <!--js-->
+                           <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'wechat/milk_brand', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+             </head>
+
+            <body>
+                        <p><h1><%=@parcel_num%>包裹创建成功</h1></p>
+                        <p>订单应付金额: €<%=@amount%></p>
+                        <p>积分或人民币微信请继续支付，其他支付方式请到官网支付</p>
+                        <%=link_to wechat.parcel_payment_new_path do %><button type="button" class="btn btn-default btn-block">继续支付</button><%end%>
+                        <%=link_to wechat.weixin_home_path do %><button type="button" class="btn btn-default btn-block">返回首页</button><%end%>
+            </body>
+    
+</html>

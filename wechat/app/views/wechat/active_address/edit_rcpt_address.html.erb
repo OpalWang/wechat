@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'mypost4u/city', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'mypost4u/distpicker', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/tianjiajijianren.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title">编辑收件人信息</p>
+                <p class="pull-left col-12 header-sub-title">所有信息填写完后请仔细核对</p>
+            </div>
+        </div>
+
+              <% if flash[:notice] %>
+                            <div id="error_explanation" class="alert alert-danger">
+                                <%flash[:notice].each do |err| %>
+                                <h5><%= err %> </h5>
+                            <%end%>
+                            </div>
+              <% end %>
+              <%=form_tag active_address_update_rcpt_address_path(id: @address.id), method: "post", name: "rcpt-form" do%>
+
+            <div class="clearfix bg-pure top-gap-1">
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">收件人</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('name', @address.nil? ? "" : @address.name, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">联系电话</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('telephone', @address.nil? ? "" : @address.telephone, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">身份证号</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        </span><%= text_field_tag('id_number', @address.nil? ? "" : @address.id_number, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">Email</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= email_field_tag('email', @address.nil? ? "" : @address.email, class:"bar-item-input") %>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">国家</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%=select_tag 'country', options_for_select([['中国','cn']], @address.nil? ? "" : @address.country), class: "bar-item-input", data: {width: '100%'} %>
+                    </div>
+                </div>
+                <div data-toggle="distpicker">
+                            <div class="bar">
+                                <div class="bar-item col-3 pull-left">          
+                                    <span class="bar-item-title light">省份</span>
+                                </div>
+                                <div class="bar-item col-9 pull-right">
+                                    <select class="bar-item-input" id="province"  name="province" data-province="<%= @address.nil? ? '' : @address.province %>"   style="height:30px;">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bar">
+                                <div class="bar-item col-3 pull-left">          
+                                    <span class="bar-item-title light">城市</span>
+                                </div>
+                                <div class="bar-item col-9 pull-right">
+                                    <select class="bar-item-input" id="city" name="city" data-city="<%= @address.nil? ? '' : @address.city %>" style="height:30px;">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bar">
+                                <div class="bar-item col-3 pull-left">          
+                                    <span class="bar-item-title light">区（县）</span>
+                                </div>
+                                <div class="bar-item col-9 pull-right">
+                                    <select class="bar-item-input" id="district" name="district" data-district="<%= @address.nil? ? '' : @address.district %>" style="height:30px;">
+                                    </select>
+                                </div>
+                            </div>
+                </div>
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">地址</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('street', @address.nil? ? "" : @address.street, class:"bar-item-input") %>
+                    </div>
+                </div>
+               
+                <div class="bar">
+                    <div class="bar-item col-3 pull-left">          
+                        <span class="bar-item-title light">邮编</span>
+                    </div>
+                    <div class="bar-item col-9 pull-right">
+                        <%= text_field_tag('postcode', @address.nil? ? "" : @address.postcode, class:"bar-item-input") %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clearfix top-gap-2">
+                <div class="col-1 pull-left text-center">          
+                    <%= check_box_tag 'default_flag',true,@address.nil? ? "" : @address.default_flag%>
+                </div>
+                <div class="col-11 pull-right bar-item-title light">
+                    设为默认地址
+                </div>
+            </div>
+
+            <div class="scroll-attachment"></div>
+
+            <div class="footer bg-pure">
+                <button class="btn btn-success btn-block" id="rcpt-submit">保存地址</button>
+            </div>
+
+        <%end%>
+
+    </body>
+   <script>
+              $(function () {
+                            $('[data-toggle="distpicker"]').distpicker();
+                             $("#name").validate({ 
+                                test:[{case:"nonzero",message:"不能为空"}] 
+                            })
+                            $("#province").validate({ 
+                                test:[{case:"nonzero",message:"不能为空"}] 
+                            })
+                            $("#city").validate({ 
+                                test:[{case:"nonzero",message:"不能为空"}] 
+                            })
+                            $("#street").validate({ 
+                                test:[{case:"nonzero",message:"不能为空"}]
+                            })
+                            $("#country").validate({ 
+                                test:[{case:"nonzero",message:"收件人国家不能为空"}] 
+                            })
+                            $("#postcode").validate({ 
+                                test:[
+                                    {case:"nonzero",message:"不能为空"},
+                                    {case:"reg",reg:/^[0-9]{6}$/,message:"中国大陆地区收件人信息中邮编必须为6位"},
+                                    {case:"reg",reg:/^(?!000000)/,message:"中国大陆地区收件人信息中邮编不能为6个0"}
+                                ] 
+                            })
+                            $("#telephone").validate({ 
+                                test:[
+                                    {case:"nonzero",message:"不能为空"},
+                                    {case:"reg",reg:/^[0-9]{11}$/,message:"收件人联系电话必须为11位的手机号码"}
+                                ] 
+                            })
+                            $("#id_number").validate({ 
+                                test:[
+                                    {case:"nonzero",message:"不能为空"},
+                                    {case:"reg",reg:/^[0-9]{17}[0-9X]$/,message:"身份证号格式不对"}
+                                ] 
+                            })
+                            $("#email").validate({ 
+                                test:[{case:"nonzero",message:"不能为空"}] 
+                            })
+                            $("#rcpt-submit").click(function(){
+                                event.preventDefault();
+                                $(".form-item input, .form-item select").validate("test");
+                                if($(".alert-panel").length!==0){
+                                  $("html,body").scrollTop($(".alert-panel").first().offset().top-120);
+                                }else{
+                                $("form[name='rcpt-form']").submit();
+                                }
+                            })
+              });
+    </script>
+</html>

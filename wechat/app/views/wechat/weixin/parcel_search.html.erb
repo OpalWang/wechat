@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>包裹查询</title>
+		<!--css-->
+		
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+  		<%= stylesheet_link_tag    'wechat/parcel'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		
+	</head>
+
+	<body>
+		<div id="parcel_search">
+		<%if flash[:notice]=="未绑定EuropeTime帐号, 请先绑定"%>
+			<div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:200px">请先登录 !</div>
+		<%else%>
+			<%if flash[:notice].present?%>
+				<div id="error_explanation" class="alert alert-info">
+					<%=flash[:notice]%>
+				</div>
+			<%end%>
+		
+			<div class="circle">
+				<img src="/assets/wechat/ren3.png">
+			</div>
+			<div class="search_panel">
+	                      
+	                                        <%= form_tag(tracking_info_fba_path(id: "0"), :method => "get",:class=>"myform") do %>
+	                                        	<div> 请选择业务类型</div>
+                                                      
+	                                        	<%= select_tag('server', options_for_select([['MYPOST4U(欧中个人包裹业务)','overseas'],['FBA(中欧电商包裹业务)','domestic']], ''), class:"select_search",style:"background-color:#fff;") %>
+                                                        
+	                                        	<div> 请输入运单号或者包裹号前14位</div>
+	                                           <%= text_field_tag "parcel_no", params["parcel_no"],class:"form-control",onblur: "check()"%>
+	                                           <input type="submit" value="查询" class="btn" />
+	                                        <% end %>
+	                                
+	                        </div>
+	               <%end%>	
+		</div>	
+	
+	</body>
+	
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>EuropeTime物流来了</title>
+		<!--css-->
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'sha1', 'data-turbolinks-track' => true %>
+		<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+		<script>
+		function f_close(){
+		            if(typeof(WeixinJSBridge)!="undefined"){
+		                WeixinJSBridge.call('closeWindow');
+		            }else{
+		                if (navigator.userAgent.indexOf("MSIE") > 0) {  
+		                    if (navigator.userAgent.indexOf("MSIE 6.0") > 0) {  
+		                        window.opener = null; window.close();  
+		                    }  
+		                    else {  
+		                        window.open('', '_top'); window.top.close();  
+		                    }  
+		                }  
+		                else if (navigator.userAgent.indexOf("Firefox") > 0) {  
+		                    window.location.href = 'about:blank ';  
+		                    //window.history.go(-2);  
+		                }  
+		                else {  
+		                    window.opener = null;   
+		                    window.open('', '_self', '');  
+		                    window.close();  
+		                }
+		            }
+		        }
+		$(function(){
+			if ($("#ticket").val()==""||$("#openid").val()==""){
+				alert("系统繁忙，请稍候重试");
+				f_close();
+			}
+			else{
+			$("#cg-modal").modal("show");
+			var ticket=$("#ticket").val()
+			const noncestr= "8203ffdsio"
+			const timestamp= "20171011"
+			const url= window.location.href.split("#")[0]
+			const jsapi_ticket= "jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+timestamp+"&url="+url
+			var appid=$("#appid").val()
+			var openid=$("#openid").val()
+			wx.config({
+				debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息>会通过log打出，仅在pc端时才会打印。
+				appId: appid, // 必填，公众号的唯一标识
+				timestamp: timestamp, // 必填，生成签名的时间戳
+				nonceStr: noncestr, // 必填，生成签名的随机串
+				signature: hex_sha1(jsapi_ticket),// 必填，签名，见附录1
+				jsApiList: ['onMenuShareTimeline','checkJsApi'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+			});
+			wx.ready(function(){
+				wx.onMenuShareTimeline({
+				title: 'EuropeTime物流来了', // 分享标题
+				link: 'http://europe-time.cn/wechat/weixin/sharing', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+				imgUrl: 'http://mmbiz.qpic.cn/mmbiz_jpg/xg5dgG6ib5HvUNPjzppqJoI96RndVq0I5jD4EyEsQdS2gD0xdMQCbRU0xLgm02v5nWJsSwibJbuOpk2EsOfgcmag/0?wx_fmt=jpeg', // 分享图标
+				success: function () { 
+				    alert("分享成功");
+				     var url="/wechat/weixin/credit_gift";          
+				             $.ajax({
+					              url:url,
+					              type: "POST",
+						dataType: "json",
+					              data:{openid: openid},
+						success:function(data){
+							var d=eval(data);
+							if(d.status=="success"&&d.reason!=null){
+						                	alert(d.reason);
+						               }
+					              },
+					              error:function(XMLHttpRequest, textStatus, errorThrown) {
+					              		alert("积分系统错误, 请回复“FXSJF”（分享送积分的大写首字母）,谢谢！");
+						
+					              }
+				              })
+				},
+				cancel: function () { 
+				    // 用户取消分享后执行的回调函数
+				}
+				});	
+			})
+			}	
+		})
+			
+
+		</script>
+	</head>
+
+	<body>
+	<input value="<%=@jsapi%>" id="ticket" hidden>
+	<input value="<%=@appid%>" id="appid" hidden>
+	<input value="<%=@openid%>" id="openid" hidden>
+	<img src="/assets/wechat/share.jpg" alt="操作流程图" style="width:100%">
+
+	<div style="position:relative">
+		<img src="/assets/wechat/5.png" alt="操作流程图" style="width:100%">
+		<div class="findus">
+			<div class="findus-search">
+				<p>点击网址进入官网</p>
+				<div class="search-block">
+					<div class="title-wechat">www.mypost4u.com</div>
+					<a class="button" href="http://www.mypost4u.com">
+						<img src="/assets/wechat/GO!.png">
+					</a>
+					<div class="click">
+						<img src="/assets/wechat/finger.png" style="width:30px">
+					</div>
+				</div>
+				<div class="qrcode-block">
+					<div class="qr-title">扫描图中二维码并关注</div>
+					<img src="/assets/wechat/qrcode_abstract.png" style="    margin-top: 30px;width:178px;">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="cg-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	                <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+	            </div>
+	            <div class="modal-body">
+	              登录后分享朋友圈有奖励哦！
+	            </div>
+	        </div><!-- /.modal-content -->
+	    </div><!-- /.modal-dialog -->
+	  </div>
+
+	</body>
+</html>
+<style>
+ .findus {
+    position: absolute;
+    top: 27%;
+    padding: 0 12%;
+    width: 100%;
+}
+.findus-search>p{
+    font-size: 20px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+}
+.search-block {
+    padding: 30px 0px;
+        position: relative;
+}
+.search-block>.title-wechat {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    float: left;
+    width: 70%;
+    font-weight: bold;
+}
+.search-block>.button {
+    float: left;
+    background-color: #7ED321;
+    padding: 5px;
+    border: 1px solid #333;
+}
+.search-block>.click {
+    position: absolute;
+    left: 73%;
+    top: 54px;
+}
+.qr-title{
+    font-size: 20px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+}
+.qrcode-block {
+    margin-top: 30px;
+    /* margin-bottom: 20px; */
+}
+</style>

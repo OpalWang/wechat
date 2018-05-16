@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'sha1', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+        <script>
+              function f_close(){
+                            if(typeof(WeixinJSBridge)!="undefined"){
+                                WeixinJSBridge.call('closeWindow');
+                            }else{
+                                        if (navigator.userAgent.indexOf("MSIE") > 0) {  
+                                            if (navigator.userAgent.indexOf("MSIE 6.0") > 0) {  
+                                                window.opener = null; window.close();  
+                                            }  
+                                            else {  
+                                                window.open('', '_top'); window.top.close();  
+                                            }  
+                                        }  
+                                        else if (navigator.userAgent.indexOf("Firefox") > 0) {  
+                                            window.location.href = 'about:blank ';  
+                                            //window.history.go(-2);  
+                                        }  
+                                        else {  
+                                            window.opener = null;   
+                                            window.open('', '_self', '');  
+                                            window.close();  
+                                        }
+                            }
+              }
+              function scan(){
+
+                    if ($("#ticket").val()==""||$("#openid").val()==""){
+                        alert("系统繁忙，请稍候重试");
+                        f_close();
+                    }
+                    else{
+                        var ticket=$("#ticket").val()
+                        const noncestr= "8203ffdsio"
+                        const timestamp= "20171011"
+                        const url= window.location.href.split("#")[0]
+                        const jsapi_ticket= "jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+timestamp+"&url="+url
+                        var appid=$("#appid").val()
+                        var openid=$("#openid").val()
+                        var hb=$("#history_barcodes").val()
+                        wx.config({
+                            debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息>会通过log打出，仅在pc端时才会打印。
+                            appId: appid, // 必填，公众号的唯一标识
+                            timestamp: timestamp, // 必填，生成签名的时间戳
+                            nonceStr: noncestr, // 必填，生成签名的随机串
+                            signature: hex_sha1(jsapi_ticket),// 必填，签名，见附录1
+                            jsApiList: ['scanQRCode','checkJsApi'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+                        });
+                            wx.ready(function(){
+                                            // 9.1.2 扫描二维码并返回结果
+                                            wx.scanQRCode({
+                                                    needResult: 1,
+                                                    desc: 'scanQRCode desc',
+                                           success: function (res) { 
+                                                        //JSON.stringify(res)=>{"resultStr":"CODE_128,%001389","errMsg":"scanQRCode:ok"}
+                                                         if(res.errMsg=="scanQRCode:ok"){
+                                                                        var barcode=res.resultStr.split(',')[1].replace("-","");
+                                                                        if($("#barcodes").val().split(";").indexOf(barcode)!=-1){
+                                                                                        alert("重复扫描")
+                                                                        }
+                                                                        else if(barcode=="undefined"){
+                                                                                        alert("该条码未识别，请重新扫描！")
+                                                                        }
+                                                                        else if($("#history_barcodes").val().split(";").indexOf(barcode)!=-1){
+                                                                                        alert("商品重复添加！")
+                                                                        }
+                                                                        else{
+                                                                                      $("#barcodes").val($("#barcodes").val()+barcode+";");
+                                                                                      var count=$("#barcodes").val().split(";").length-1
+                                                                                      alert("成功扫描"+count+"种商品！");
+                                                                        }
+                                                         }
+                                                         else{
+                                                                        alert("扫描失败，请重试")
+                                                         }
+                                            }
+                            })  
+                        });
+                        wx.error(function (res) {//错误时调用
+                                                alert(res.errMsg);
+                                });
+                    }   
+              }
+            
+
+        </script>
+    </head>
+    <body>
+              <%if flash[:notice].present?%>
+                            <div id="error_explanation" class="alert alert-danger" style="margin:0px">
+                                <h5><%=flash[:notice]%> </h5>
+                            </div>
+              <%end%>
+              <input value="<%=@jsapi%>" id="ticket" hidden>
+              <input value="<%=@appid%>" id="appid" hidden>
+              <input value="<%=@openid%>" id="openid" hidden>
+              <input value="<%=@history_barcodes%>" id="history_barcodes" hidden>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/shangpingxinxi.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title">商品信息添加页面</p>
+                <p class="pull-left col-12 header-sub-title">请在此页面添加商品种类，提交后可修改商品数量</p>
+            </div>
+        </div>
+        <div class="bar bg-pure">
+                <div class="bar-item col-12 pull-left">  
+                <p>方法一：您可以点击图标<img src="/assets/wechat/saoyisao.png" >，调用微信扫一扫，扫描多个商品条形码。</p>
+                <p>方法二：您可以输入多个商品条形码，每个条形码以分号结尾。例如：<span style="color:red">8000050594209;8000050594803;</span></p>
+                </div>
+        </div>
+        <%= form_tag(wechat.parcel_commodity_create_path, :method => "post",:class=>"myform",:name=> "arl-form") do %>
+        <div class="clearfix bg-pure">
+            <div class="bar">
+                <div class="bar-item col-10 pull-left">     
+                     <%= text_field_tag('barcodes', nil, class:"bar-item-input gray",placeholder:"输入条形码") %> 
+                </div>
+                <a href="javascript:void(0)" onclick="scan()" >
+                <div class="bar-item col-2 pull-right text-right">
+                   <span class="bar-item-icon" style="top:-1px"><img src="/assets/wechat/saoyisao.png" ></span>
+                </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="scroll-attachment double"></div>
+        
+        <div class="footer bg-pure">
+            <button type="type" class="btn btn-success btn-block" id="arl-submit">提交包裹</button>
+            <%= link_to "返回", parcel_ygbs_new_path , class:"btn btn-default btn-block"%>
+        </div>
+        <%end%>
+
+         <script>
+            $(function(){
+            	  	$(".gray").validate( {
+                             test:[
+                                {case:"nonzero",message:"不能为空"},
+                                {
+                                    case:"reg", 
+                                    reg:/^[0-9a-zA-Z\;\；]+$/, 
+                                    message:"存在非法字符"
+                                },
+                                {
+                                    case:"reg", 
+                                    reg:/[\;\；]+$/, 
+                                    message:"末尾必须以；结尾"
+                                }
+                              ] 
+                         });
+                         $("#arl-submit").click(function(){
+                                    event.preventDefault();
+                                    $(".gray").validate("test");
+                                    if($(".alert-panel").length===0){
+                                      $("form[name='arl-form']").submit();
+                                    }
+                         })
+            })
+       </script>
+    </body>
+</html>

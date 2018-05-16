@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+
+             <head>
+                           <meta name="viewport" content="width=device-width, initial-scale=1" >
+        		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                           <title>支付平台--微信支付</title>
+                           <!--css-->
+                           <%= stylesheet_link_tag    'bootstrap.min'%>
+		        <%= stylesheet_link_tag    'wechat/style'%>
+		        <%= stylesheet_link_tag    'wechat/framework'%>
+                           <!--js-->
+                           <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'wechat/milk_brand', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+             </head>
+
+            <body>
+            
+            <div id="main-content">
+                  
+                    <p>交易订单号&nbsp;&nbsp;&nbsp;&nbsp;<%=@trade_no%></p>
+                    <%if File.exists?(@img_path)%>
+                          <img src=<%="/assets/wechat/pay/"+"#{@name}"%> alt="支
+付二维码" style="width:190px;height:190px;">
+                          <p>长按识别二维码支付</p>
+                    <%else%>
+                        <img src="/assets/wechat/timeout.png" alt="支付二维码" style="width:190px;height:190px;">
+                         <p>二维码已过期，请重新下单。</p>
+                    <%end%>
+
+                      <div class="clearfix"></div>
+                     
+            </div>
+            
+             </body>
+    
+</html>                   
+                        

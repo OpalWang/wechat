@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+
+             <head>
+                           <meta name="viewport" content="width=device-width, initial-scale=1" >
+        		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                           <title>支付平台--支付方式选择</title>
+                           <!--css-->
+                           <%= stylesheet_link_tag    'bootstrap.min'%>
+		        <%= stylesheet_link_tag    'wechat/style'%>
+		        <%= stylesheet_link_tag    'wechat/framework'%>
+                           <!--js-->
+                           <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'wechat/milk_brand', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+             </head>
+
+            <body>
+                        	<div id="main-content">
+	<%if flash[:notice].present?%>
+                            <div id="error_explanation" class="alert alert-warning" style="margin:0px">
+                                <h5><%=flash[:notice]%> </h5>
+                            </div>
+    <%end%>
+	<div id="payment">
+		<div class="col-style-1">
+			<div class="widget-2">
+			    <div id="basic-info" class="col-xs-12 table-responsive">
+	          			<table class="table">
+		          			<tbody>
+					      <tr>
+					      	<td></td>
+						<td style="width: 500px">
+							<%if @wui.user_rank=="diamond"%>
+					      			<p style="color:red">已为您扣除钻石会员特惠：快件产品每单已立减0.5欧元</p>
+					      		<%end%>
+							付款金额：<span class="light-font">&nbsp;&nbsp;<span style="color:#2B8A4F; font-weight: bold;"><%=currency_abbr("CNY")%> <%=session[:amount_cny]%> </span></span></td>
+					      </tr>
+					</tbody>
+			      	</table>
+			    </div>
+			</div>
+		<div class="clearfix"></div>
+		</div>
+		
+  	
+  	<%= form_tag(wechat.parcel_payment_create_path, :method => "post",:class=>"myform",:name=> "pm-form") do %>
+  	 	<%=hidden_field_tag 'userid', session[:userid]%>
+  	 	<%=hidden_field_tag 'related_num', session[:related_num]%>
+		<%=hidden_field_tag 'description', session[:description]%>
+		<%=hidden_field_tag 'allow_currency', session[:allow_currency]%>
+		<%=hidden_field_tag 'allow_payment', session[:allow_payment]%>
+		<%=hidden_field_tag 'pmnt_type', session[:pmnt_type]%>
+		<%=hidden_field_tag 'order_type', session[:order_type]%>
+		<%=hidden_field_tag 'origin_currency', session[:origin_currency]%>
+		<%=hidden_field_tag 'amount', session[:amount]%>
+		<%=hidden_field_tag 'currency', session[:currency]%>
+		<%=hidden_field_tag 'cur2rmb_rate', session[:cur2rmb_rate]%>
+		<%=hidden_field_tag 'amount_cny', session[:amount_cny]%>
+		<%=hidden_field_tag 'amount_eur', session[:amount_eur]%>
+		<%=hidden_field_tag 'country', session[:country]%>
+			<div class="col-style-1">
+			  <div class="widget-2">
+			    <div id="pay-info" class="col-xs-12 table-responsive">
+					  <table class="table">
+					    <thead>
+						  <tr>
+						    <td colspan="3"><strong>支付方式选择</strong></td>
+						  </tr>
+						</thead>
+					    <tbody>
+
+					    <% if @credit_use == "Y"%>
+							  <tr>
+									<td >
+					        <div class="radio-botton-block">
+					        <%= radio_button "checkout_way","","credit" ,style:"float: left; position: relative; left: 20%; top: 6px;", onchange: 'payclick(this);', id: "credit_use"%>
+							<button type="button" class="radio-button form-control"  onclick="payclick(this);" id="credit_use">积分支付</button>
+							
+						</div>
+									</td>
+									<td colspan="2">
+										<span class="light-font">您的当前积分是：<span style="color:#2B8A4F"><%=@wui.user_credit%></span></span>
+										<p><span class="light-font">您可以选择积分抵扣的方式进行支付。</span></p>
+									</td>
+							  </tr>
+						  <% end %>
+						  
+						  	<% if @wechatpay == "Y" %>
+							  <tr>
+									<td >
+					  <div class="radio-botton-block">
+					  		<%= radio_button "checkout_way","","wechatpay" ,style:"float: left; position: relative; left: 20%; top: 6px;", onchange: 'payclick(this);', id: "wechatpay" %>
+							<button type="button" class="radio-button form-control" style="background-image: url('/assets/mypost4u/wechat.png');  background-size: 70% 150%; background-repeat: no-repeat;background-position: 60% 40%;" onclick="payclick(this);" id="wechatpay"></button>
+							
+						</div>
+									</td>
+									<td colspan="2" style="vertical-align: middle;">
+									<span class="light-font"><span style="color:#2B8A4F">微信支付</span>
+									    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: red">推荐该支付方式，使用该支付方式每个非小包奶粉专线包裹即时返还0.5欧元（33.33个）积分</span>
+									</span>
+									<p><span class="light-font">请填写下方支付人信息</span></p>
+									</td>
+							  </tr>
+						  <% end %>
+						  	
+						  
+							<tr  id="oceanpayinfo"  style="display: none">
+								<td>
+								<div class="form-item" class="slide-panel">
+				          	<span class="item-text">＊姓名：</span><%= text_field_tag('consumer_name',  @aa.present? ? @aa.name : "", class:"form-control") %>
+				          	</div>
+				          	</td>
+				          	<td>
+				          	<div class="form-item" class="slide-panel">
+				          	<span class="item-text">＊电话：</span><%= text_field_tag('consumer_phone', @aa.present? ? @aa.telephone : "", class:"form-control") %>
+				          	</div>
+				          	</td>
+				          	<td>
+				          	<div class="form-item" class="slide-panel">
+				          	<span class="item-text">＊身份证号：</span><%= text_field_tag('consumer_id', @aa.present? ? @aa.id_number : "", class:"form-control") %>
+				          	</div>
+				          	</td>
+				          </tr>
+						  <tr><td></td><td></td><td></td></tr>
+					    </tbody>
+					  </table>
+					</div>
+				
+				
+			  </div>
+			  <div class="clearfix"></div>
+	    </div>
+			<div class="text-center">
+		   
+		   <button type="submit" class="btn btn-success btn-block" data-disable-with="请稍等" id="pm-submit">提交</button>
+		<% end %>
+					  
+		 
+		<div class="clearfix"></div>
+	</div>
+	<div class="clearfix"></div>
+	</div>
+
+
+	<script>
+            // $(function(){
+            // 	$("#consumer_name").validate( { test:[{case:"nonzero",message:"不能为空"}] });
+            // 	$("#consumer_phone").validate( { test:[{case:"nonzero",message:"不能为空"}] });
+            // 	$("#consumer_id").validate( { test:[{case:"nonzero",message:"不能为空"}] });
+            // 		 $("#pm-submit").click(function(){
+            //                         event.preventDefault();
+            //                         $(".form-control").validate("test");
+            //                         if($(".alert-panel").length===0){
+            //                           $("form[name='pm-form']").submit();
+            //                         }
+            //              })
+            // })
+            </script>
+            </body>
+    
+</html>

@@ -1,0 +1,360 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />  
+        <meta http-equiv="Pragma" content="no-cache" />  
+        <meta http-equiv="Expires" content="0" />
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+        <%if flash[:notice].present?%>
+                            <div id="error_explanation" class="alert alert-warning" style="margin:0px">
+                                <h5><%=flash[:notice]%> </h5>
+                            </div>
+    <%end%>
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/yangguang.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title text-orange">阳光包税包裹信息</p>
+                <p class="pull-left col-12 header-sub-title">包税快件服务：3步下单，简单快捷</p>
+            </div>
+        </div>
+    <%=form_tag parcel_order_list_path, method: "post", name: "ygbs-form" do%>
+    <%=hidden_field_tag 'rank', @wui.user_rank%>  
+        <div class="clearfix bg-pure top-gap-1">
+            <div class="bar">
+                <div class="bar-item col-7 pull-left">          
+                   <span class="bar-item-title" style="font-size:16px">1.添加商品到包裹中</span>
+                </div>
+                <div class="bar-item col-5 pull-left text-right">
+                <%if @info.present?&&@info.size==15%>
+                    <button type="button" class="btn btn-block" disabled="disabled">添加</button>
+                <%else%>
+                    <%=link_to "添加", wechat.parcel_add_commodity_path,class:"btn btn-block btn-style-orange"%>
+                <%end%>
+                </div>
+                <div class="bar-item col-12 pull-left top-gap-1">
+                    <p class="bar-item-des">提示：为了您的包裹顺利清关，请准确添加每一种商品，所有商品必须原盒包装不得拆封。</p>
+                    <p class="bar-item-des">该产品最多可添加15种商品,包裹内所寄物品不能含有价签，购物小票等体现货物价值的凭证。</p>
+                    <p class="bar-item-des">包裹总申报价值不得超过2000元。</p>
+                </div>
+            </div>
+            
+    <%if @info.present?&&@info.size>0%>
+    <%k=1%>
+        <%@info.each do |ci|%>
+            <div class="bar">
+                        <div class="bar-item col-2 pull-left"> 
+                        商品<%=k%>    
+                        </div>
+                        <div class="bar-item col-7 pull-left">     
+                        <%=hidden_field_tag 'selected_rls[]', ci["sys_commodity_no"]%>  
+                        <%=hidden_field_tag 'netweightPerUnit', ci["netweightPerUnit"], class: "netweightPerUnit"%>   
+                           <p><span class="bar-item-title"><%=ci["name"]%></span></p>
+                           <p><span class="bar-item-title"><%=ci["barcode"]%></span></p>
+                           <p><span class="bar-item-title" style="font-size: 18px;color: #FDAE47;">¥<%=BigDecimal.new(sprintf("%.2f",ci["declare_rmb_price"]))%></span></p>
+                        </div>
+                        <div class="bar-item col-3 pull-left text-right">
+                            <p><%=link_to parcel_delete_rl_path(sys_commodity_no: ci["sys_commodity_no"]) do%><span class="bar-item-title" style="color:red">删除</span><%end%></p>
+                            <p><span class="bar-item-title light">&nbsp;</span></p>
+                            <p><span class="bar-item-title light">
+                                                 <input type="number" name="<%=ci["sys_commodity_no"]%>_num" class="text-center form-control input-number rls-cookies rls-num rls-commodity"  id="<%=k%>" min="1" value="<%=ci["quantity"].present? ? ci["quantity"] : 1%>" style="width: 100% !important;" data-price="<%=ci["declare_rmb_price"]%>">
+                                                 </span></p>
+                        </div>
+                    </div>
+                <%k+=1%>
+        <%end%>
+                            <div class="bar">
+                                    <div class="bar-item col-8 pull-left">          
+                                       <span class="bar-item-title">包裹总申报价值</span>
+                                    </div>
+                                    <div class="bar-item col-4 pull-left text-right">
+                                        <span class="bar-item-title" style="font-size: 18px;color: #FDAE47;" id="declare_rmb_price">¥<%=session[:declare_rmb_price]%></span>
+                                         
+                                    </div>
+                                    <div class="bar-item col-8 pull-left">          
+                                       <span class="bar-item-title">税金</span>
+                                    </div>
+                                    <div class="bar-item col-4 pull-left text-right">
+                                        <span class="bar-item-title" id="tax">€<%=session[:tax]%></span>
+                                    </div>
+                            </div>
+    <%end%>
+            
+            
+        </div>
+
+        <div class="clearfix bg-pure top-gap-1">
+            <div class="bar">
+                <div class="bar-item col-12 pull-left">          
+                   <span class="bar-item-title" style="font-size:16px">2.输入包裹信息</span>
+                </div>
+                <div class="bar-item col-12 pull-left top-gap-1">
+                    <p class="bar-item-des">重量按体积重和毛重，二者取大值。体积重：（长*宽*高）/6000；毛重≤20kg</p>
+                </div>
+                <div class="bar-item col-6 pull-left top-gap-1">
+                    <%= text_field_tag('weight', session[:weight].blank? ? params[:weight] : session[:weight], class:"bar-item-input params-1" ,placeholder:"重量kg", style:"border: 1px solid #B2AEB3;border-radius: 2px;padding-left: 10px;height: 30px;width: 95%;")%>
+                </div>
+                <div class="bar-item col-6 pull-left top-gap-1">
+                    <%= text_field_tag('length', session[:length].blank? ? params[:length] : session[:length], class:"bar-item-input params-1" , placeholder:"长度cm", style:"border: 1px solid #B2AEB3;border-radius: 2px;padding-left: 10px;height: 30px;width: 95%;margin-left:5%;")%>
+                </div>
+                <div class="bar-item col-6 pull-left top-gap-1">
+                    <%= text_field_tag('width', session[:width].blank? ? params[:width] : session[:width], class:"bar-item-input params-1" , placeholder:"宽度cm", style:"border: 1px solid #B2AEB3;border-radius: 2px;padding-left: 10px;height: 30px;width: 95%;")%>
+                </div>
+                <div class="bar-item col-6 pull-left top-gap-1">
+                    <%= text_field_tag('height', session[:height].blank? ? params[:height] : session[:height], class:"bar-item-input params-1" , placeholder:"高度cm", style:"border: 1px solid #B2AEB3;border-radius: 2px;padding-left: 10px;height: 30px;width: 95%;margin-left:5%;")%>
+                </div>
+            </div>
+            <div class="bar">
+                <div class="bar-item col-4 pull-left">          
+                   <a href="javascript:void(0)"><span class="bar-item-title light">包邮包税价格</span></a>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title total-amount" style="text-decoration: line-through;color:gray;font-size:20px" id="web_price"><%=session[:web_fare].present? ? "€"+session[:web_price].to_s : ""%></span>
+                </div>
+                <div class="bar-item col-4 pull-left text-right">
+                    <span class="bar-item-title total-amount" id="price">€<%=session[:price]%></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix bg-pure top-gap-1">
+             <div class="bar">
+                <div class="bar-item col-12 pull-left">          
+                   <span class="bar-item-title" style="font-size:16px;">3.填写收件人和寄件人地址</span>
+                </div>
+                <!--btns block-->
+                <% if !@rcpt.present? %>
+                    <div class="bar-item col-6 pull-left top-gap-1">
+                            <%=link_to wechat.active_address_add_recipient_address_path(type:"ygbs_new"),class:"btn btn-block btn-style-orange",style:"width: 95%" do %>添加收件人地址<%end%>
+                    </div>
+                <% end %>
+                <% if !@sndr.present? %>
+                    <div class="bar-item col-6 pull-right top-gap-1">
+                            <%=link_to wechat.active_address_add_sender_address_path(type:"ygbs_new"), class:"btn btn-block btn-style-orange",style:"width: 95%; margin-left:5%;" do %>添加寄件人地址<%end%>
+                    </div>
+                <% end %>
+
+                <div class="clearfix"></div>
+                <!--btns block-->
+            </div>
+            
+            <%if @rcpt.present?%>
+                <%=hidden_field_tag 'rcpt_id', @rcpt.id%>  
+                <%=hidden_field_tag 'rcpt_name', @rcpt.name%>
+                <%=hidden_field_tag 'rcpt_tele', @rcpt.telephone%>  
+                <%=hidden_field_tag 'rcpt_address', @rcpt.getInfo["address_combine"]%>  
+                <%=link_to wechat.active_address_rcpt_select_path do %>
+                    <div class="bar" style="padding-bottom: 25px">
+                        <div class="bar-item col-3 pull-left">          
+                            <span class="bar-item-title soft"><%=@rcpt.name%></span>
+                            <div><span class="default-address">收件人</span></div>
+                        </div>
+                        <div class="bar-item col-8 pull-left">
+                            <p class="bar-item-title block soft"><%=@rcpt.telephone%></p>
+                            <p class="bar-item-title block soft"><%=@rcpt.getInfo["address_combine"]%></p>
+                        </div>
+                    </div>
+                <%end%>
+            <%end%>
+
+            
+            <%if @sndr.present?%>
+                <%=hidden_field_tag 'sndr_id', @sndr.id%>  
+                <%=hidden_field_tag 'sndr_name', @sndr.name%>  
+                <%=hidden_field_tag 'sndr_address', @sndr.getInfo["address_combine"]%>
+                <%=link_to wechat.active_address_sndr_select_path do %>
+                    <div class="bar" style="padding-bottom: 25px">
+                        <div class="bar-item col-3 pull-left">          
+                            <span class="bar-item-title soft"><%=@sndr.name%></span>
+                            <div><span class="default-address">寄件人</span></div>
+                        </div>
+                        <div class="bar-item col-8 pull-left">
+                            <p class="bar-item-title block soft"><%=@sndr.telephone%></p>
+                            <p class="bar-item-title block soft"><%=@sndr.getInfo["address_combine"]%></p>
+                        </div>
+                    </div>
+                <%end%>     
+            <%end%>
+        </div>
+
+        <div class="scroll-attachment double"></div>
+
+        <div class="footer bg-pure">
+            <button class="btn btn-success btn-block" id="ygbs-submit" type="button">提交包裹</button>
+            <%=link_to wechat.weixin_home_path do %><button type="button" class="btn btn-default btn-block">返回</button><%end%>
+        </div>
+    <%end%>
+    <script>
+              $(function(){
+                             if($("#weight").data("validate")===undefined){
+                              $("#weight").validate({ test:[{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^[1-4]{0,1}[0-9]{1}$)|(^50$)/, message:"必须输入1-50整数"}] });
+                            }else{
+                              $("#weight").validate('refresh')
+                              $("#weight").validate('add', [{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^[1-4]{0,1}[0-9]{1}$)|(^50$)/, message:"必须输入1-50整数"}])
+                            }
+                            if($("#height").data("validate")===undefined){
+                              $("#height").validate( { test:[{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^\d+$)|(^\d+\.\d+$)/, message:"必须输入数字"}] });
+                            }else{
+                              $("#height").validate('refresh')
+                              $("#height").validate('add', [{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^\d+$)|(^\d+\.\d+$)/, message:"必须输入数字"}])
+                            }
+                            if($("#width").data("validate")===undefined){
+                              $("#width").validate( { test:[{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^\d+$)|(^\d+\.\d+$)/, message:"必须输入数字"}] });
+                            }else{
+                              $("#width").validate('refresh')
+                              $("#width").validate('add', [{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^\d+$)|(^\d+\.\d+$)/, message:"必须输入数字"}])
+                            }
+                            if($("#length").data("validate")===undefined){
+                              $("#length").validate( { test:[{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^\d+$)|(^\d+\.\d+$)/, message:"必须输入数字"}] });
+                            }else{
+                              $("#length").validate('refresh')
+                              $("#length").validate('add', [{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/(^\d+$)|(^\d+\.\d+$)/, message:"必须输入数字"}])
+                            }
+                            function check_weight () {
+                                var input_weight = parseFloat($("#weight").val())
+                                var total_weight = 0;
+                                $(".netweightPerUnit").each(function () {
+                                  total_weight += parseFloat($(this).val()) * parseFloat($(this).parent().parent().find(".rls-commodity").val())
+                                }) 
+                                if (input_weight >= total_weight) {
+                                  return true
+                                }
+                                return false
+                            }    
+                            $("#ygbs-submit").click(function(){
+                                    event.preventDefault()
+                                    var rank=document.getElementById("rank").value
+                                    var first = $(".rls-commodity").length
+                                    var second = (parseFloat($("#width").val())*parseFloat($("#height").val())*parseFloat($("#length").val())/6000)<=50.0
+                                    var sum = 0
+                                    var quantity = 0
+                                    var error = ""
+                                    $(".rls-commodity").each(function() {
+                                        sum += parseFloat($(this).val()) * parseFloat($(this).data('price'))
+                                        quantity++
+                                    })
+
+                                    var third = sum <= 2000
+                                    var fourth = quantity <= 15
+                                    var fifth = $(".default-address").length==2
+
+                                    first ? '' :  error += "商品种类不能小于1 \n" 
+                                    second ? '' :  error += "包裹长*宽*高/6000不能超过50 \n" 
+                                    third ? '' :  error += "单个包裹内货物总价值不超过2000元 \n" 
+                                    fourth ? '' : error += "商品种类不能超过15\n"
+                                    check_weight() ? '' : error += "包裹重量不能小于商品总重量\n"
+                                    fifth ? '' : error += "收件人或寄件人地址不能为空\n"
+                                    $(".form-item input, .form-item select, .rls-commodity, .params-1").validate("test")
+                                    if($(".alert-panel").length!==0){
+                                      $("html,body").scrollTop($(".alert-panel").first().offset().top-120);
+                                    }else if(rank=="ordinary"){
+                                        alert("该路线需要开通“TIME白金会员”,请到mypost4u官网-会员中心开通")
+                                    }else if(error){
+                                        alert(error)
+                                    }else{
+                                        $("form[name='ygbs-form']").submit();
+                                    }
+                             })
+              })
+              $(".params-1").on("input", function () {
+                    var flag = true
+                   for (var i = 0; i < $(".params-1").length; i++) {
+                        if ($(".params-1")[i].value === '') {
+                            flag = false
+                            break
+                        }
+                   }
+                   if (flag){
+                            var second = (parseFloat($("#width").val())*parseFloat($("#height").val())*parseFloat($("#length").val())/6000)
+                            if(second>50.0){
+                                alert("包裹长*宽*高/6000不能超过50")
+                            }
+                            else{
+                                get_price()
+                            }
+                   }
+              })
+              function get_price(){
+                            var weight=$("#weight").val();
+                            var length=$("#length").val();
+                            var width=$("#width").val();
+                            var height=$("#height").val();
+                            var shpmt_product="阳光包税专线";
+                            var sndr_cuntry="de";
+                            $.ajax({
+                                           url:"/wechat/parcel/calculate_price",
+                                  	method:"post",
+                                  	data:{weight: weight, length: length, width: width,height: height, shpmt_product: shpmt_product, sndr_origin_cntry: sndr_cuntry},
+                                  	success: function(data) {
+                                    		var d=eval(data);
+                                    		if(d.status=='success'){
+                                                                            if(d.price!=d.web_price){
+                                                                                var web_price="€"+d.web_price
+                                                                                document.getElementById("web_price").innerHTML=web_price;
+                                                                            }else{
+                                                                                document.getElementById("web_price").innerHTML="";
+                                                                            }
+                                                    		var p="€"+d.price;
+                                                    		document.getElementById("price").innerHTML=p;
+                                            	}
+                                    		else{
+                                        			alert(d.reason);
+                                    		}
+                                    	}
+                            	});
+              }
+              $(".rls-commodity").on("input", function () {                 	
+            		var quantity=$(this).val()
+            		if(quantity !== '' && parseInt(quantity) > 0){
+                            	var name=$(this).prop('name')
+                            	var sys_commodity_no=name.split("_")[0]
+                            	get_tax(sys_commodity_no,quantity)
+           	 	}
+              })
+
+              $(".rls-commodity").validate( { test:[{case:"nonzero",message:"不能为空"}, {case:"reg", reg:/^\d+$/, message:"必须输入整数"}] });
+
+              function get_tax(sys_commodity_no,quantity){
+                            	var quantity=quantity;
+                            	var sys_commodity_no=sys_commodity_no;
+                            
+                            	$.ajax({
+                                  	url:"/wechat/parcel/set_quantity",
+                                  	method:"post",
+                                  	data:{sys_commodity_no: sys_commodity_no, quantity: quantity},
+                                  	success: function(data) {
+
+                                    		if(data.status=='success'){
+                                                        		var tax="€"+data.tax;
+                                                        		var drp="¥"+data.declare_rmb_price;
+                                                        		var price="€"+data.price;
+                                                        		document.getElementById("tax").innerHTML=tax;
+                                                        		document.getElementById("declare_rmb_price").innerHTML=drp;
+                                                        		document.getElementById("price").innerHTML=price;
+                                                                            if(data.price!=data.web_price){
+                                                                                var web_price="€"+data.web_price
+                                                                                document.getElementById("web_price").innerHTML=web_price;
+                                                                            }else{
+                                                                                document.getElementById("web_price").innerHTML="";
+                                                                            }
+                                            	}
+                                    	}
+                            	});
+              }
+    </script>
+
+    </body>
+</html>

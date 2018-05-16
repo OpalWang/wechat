@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>建设中</title>
+		<!--css-->
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+		  <%= stylesheet_link_tag    'wechat/weui.mini'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'sha1', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'wechat/weixin', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'qrcode.mini', 'data-turbolinks-track' => true %>
+	</head>
+	<script>
+		function photo(){
+			if ($("#ticket").val()==""||$("#openid").val()==""){
+				alert("系统繁忙，请稍候重试");
+				f_close();
+			}
+			else{
+				var ticket=$("#ticket").val()
+				const noncestr= "8203ffdsio"
+				const timestamp= "20171011"
+				const url= window.location.href.split("#")[0]
+				const jsapi_ticket= "jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+timestamp+"&url="+url
+				var appid=$("#appid").val()
+				var openid=$("#openid").val()
+				wx.config({
+					debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息>会通过log打出，仅在pc端时才会打印。
+					appId: appid, // 必填，公众号的唯一标识
+					timestamp: timestamp, // 必填，生成签名的时间戳
+					nonceStr: noncestr, // 必填，生成签名的随机串
+					signature: hex_sha1(jsapi_ticket),// 必填，签名，见附录1
+					jsApiList: ['chooseImage','checkJsApi'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+					//待添加上传和下载
+				});  
+				wx.ready(function(){
+					wx.chooseImage({
+						count: 1, // 默认9
+						sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+						sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+						success: function (res) {
+						var localIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+						alert(localIds);
+						for (var i = 0; i < localIds.length; i++) {
+							alert(localIds[i]);
+							
+						$("#imges").append("<img src='/assets/wechat/saoyisao.png' style='width:100%'/> ");
+						}
+						}
+					});
+				});
+				wx.error(function (res) {//错误时调用
+                        				alert(res.errMsg);
+           				});
+			}	
+		}
+
+		/*function xyqrcode(options) {
+		    var settings = {
+		        dom:'',
+		        render: 'image',   //生成二维码的格式还有image、div
+		        ecLevel:"H",
+		        text:"",
+		        background:"#ffffff",
+		        fill:"#333333", //二维码纹路的颜色
+		        fontcolor:"#ff9818",
+		        fontname:"Ubuntu",
+		        image:{},
+		        label:"",
+		        mPosX:0.5,   //图片在X轴的位置
+		        mPosY:0.5,    //图片在X轴的位置
+		        mSize:0.27,   //图片大小
+		        minVersion:10,
+		        mode:4,
+		        quiet:1,
+		        radius:1,
+		        size:400
+		    };
+		    if (options) {
+		        $.extend(settings, options);//options对象跟settings比较，相同的就替换，没有的就添加
+		 
+		    }
+		    if(settings.dom.length==0){
+		        window.console.log("Error: dom empty!");
+		        return;
+		    }
+		    if(settings.url.length==0){
+		        window.console.log("Error: url empty!");
+		        return;
+		    }
+		    settings.text=settings.url; //在qrcode生成二维码的地址是text。这里就把url赋值给text
+		    $(settings.dom).qrcode(settings);
+		 
+		}
+
+		function pay(){
+			var options={};
+		            options.url="weixin://wxpay/bizpayurl?pr=E8rXE8G"; //二维码的链接
+		            options.dom="#code";//二维码生成的位置
+		            options.image=$('#img-buffer');//图片id
+		           // options.render="canvas";//设置生成的二维码是canvas格式，也有image、div格式
+		            options.render="image";//设置生成的二维码是canvas格式，也有image、div格式
+		            xyqrcode(options);
+		}*/
+		function pay(){
+			new QRCode(document.getElementById("qrcode"), "weixin://wxpay/bizpayurl?pr=rVGD5Vn");
+		}
+		$(function(){
+		      var form = $("#myform");
+		      
+		      
+		      
+		      //提交
+		     // form.submit();
+		      
+		    })
+	</script>
+
+	<body ontouchstart>
+	<input value="<%=@jsapi%>" id="ticket" hidden>
+	<input value="<%=@appid%>" id="appid" hidden>
+	<input value="<%=@openid%>" id="openid" hidden>
+	<%=form_tag weixin_parcel_list_path, method: "get", id: "myform" do%>
+	          
+	            <%= hidden_field_tag "server", "overseas"%>
+	          
+	    
+	    <div class="submit-button text-left">
+	      <button type="submit" class="btn btn-danger btn-bg">页面正在跳转，请稍等</button>
+	    </div>
+	   <% end %> 
+	<div id="container" class="container">
+	<div class="page">
+	    <div class="page__bd" style="height: 100%;">
+	        <div class="weui-tab">
+	            <div class="weui-tab__panel">
+	            	<img src="/assets/construction.jpg" alt="操作流程图" style="width:100%">
+	            	<br/>
+	            	<a href="javascript:void(0)" onclick="pay()"> <input type="button" value="支付" class="btn btn-info btn-block  bottom-gap-1" /> </a>
+	            	<br>
+	            	<a href="javascript:void(0)" onclick="photo()">
+		            	<input type="button" value="拍照" class="btn btn-info btn-block  bottom-gap-1" />
+                	</a>
+                	</br>
+                	<div id="imges"></div>
+                	<div id="qrcode"></div>
+                	<video width="100%" height="100%" controls="controls">
+   <source src="images/duesseldorf-lager-large.mp4" type="video/mp4"></source>
+  </video>
+	            </div>
+	            <div class="weui-tabbar">
+	                <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+	                    <span style="display: inline-block;position: relative;">
+	                        <img src="/assets/wechat/icon_tabbar.png" alt="" class="weui-tabbar__icon">
+	                        <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+	                    </span>
+	                    <p class="weui-tabbar__label">微信</p>
+	                </a>
+	                <a href="javascript:;" class="weui-tabbar__item">
+	                    <img src="/assets/wechat/icon_tabbar.png" alt="" class="weui-tabbar__icon">
+	                    <p class="weui-tabbar__label">通讯录</p>
+	                </a>
+	                <a href="javascript:;" class="weui-tabbar__item">
+	                    <span style="display: inline-block;position: relative;">
+	                        <img src="/assets/wechat/icon_tabbar.png" alt="" class="weui-tabbar__icon">
+	                        <span class="weui-badge weui-badge_dot" style="position: absolute;top: 0;right: -6px;"></span>
+	                    </span>
+	                    <p class="weui-tabbar__label">发现</p>
+	                </a>
+	                <a href="javascript:;" class="weui-tabbar__item">
+	                    <img src="/assets/wechat/icon_tabbar.png" alt="" class="weui-tabbar__icon">
+	                    <p class="weui-tabbar__label">我</p>
+	                </a>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	</div>
+	<script type="text/javascript">
+	    $(function(){
+	        $('.weui-tabbar__item').on('click', function () {
+	            $(this).addClass('weui-bar__item_on').siblings('.weui-bar__item_on').removeClass('weui-bar__item_on');
+	        });
+	    });
+	</script>
+	<style type="text/css">
+		.container, .page {
+		    position: absolute;
+		    top: 0;
+		    right: 0;
+		    bottom: 0;
+		    left: 0;
+		}
+		#imges{
+			width: 100%;
+			height: 200px;
+		}
+		#qrcode {
+		width:265px;
+		  height:300px;
+		  margin-bottom:15px;
+		} 
+	</style>
+	</body>
+	
+</html>

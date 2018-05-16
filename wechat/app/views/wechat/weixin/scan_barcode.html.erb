@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>扫码添加商品</title>
+		<!--css-->
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'sha1', 'data-turbolinks-track' => true %>
+		<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+		<script>
+		function f_close(){
+		            if(typeof(WeixinJSBridge)!="undefined"){
+		                WeixinJSBridge.call('closeWindow');
+		            }else{
+		                if (navigator.userAgent.indexOf("MSIE") > 0) {  
+		                    if (navigator.userAgent.indexOf("MSIE 6.0") > 0) {  
+		                        window.opener = null; window.close();  
+		                    }  
+		                    else {  
+		                        window.open('', '_top'); window.top.close();  
+		                    }  
+		                }  
+		                else if (navigator.userAgent.indexOf("Firefox") > 0) {  
+		                    window.location.href = 'about:blank ';  
+		                    //window.history.go(-2);  
+		                }  
+		                else {  
+		                    window.opener = null;   
+		                    window.open('', '_self', '');  
+		                    window.close();  
+		                }
+		            }
+		        }
+		function scan(){
+			if ($("#ticket").val()==""||$("#openid").val()==""){
+				alert("系统繁忙，请稍候重试");
+				f_close();
+			}
+			else{
+				var ticket=$("#ticket").val()
+				const noncestr= "8203ffdsio"
+				const timestamp= "20171011"
+				const url= window.location.href.split("#")[0]
+				const jsapi_ticket= "jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+timestamp+"&url="+url
+				var appid=$("#appid").val()
+				var openid=$("#openid").val()
+				wx.config({
+					debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息>会通过log打出，仅在pc端时才会打印。
+					appId: appid, // 必填，公众号的唯一标识
+					timestamp: timestamp, // 必填，生成签名的时间戳
+					nonceStr: noncestr, // 必填，生成签名的随机串
+					signature: hex_sha1(jsapi_ticket),// 必填，签名，见附录1
+					jsApiList: ['scanQRCode','checkJsApi'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+				});
+				wx.ready(function(){
+					 // 9.1.2 扫描二维码并返回结果
+				              wx.scanQRCode({
+				                          	needResult: 1,
+				                          	desc: 'scanQRCode desc',
+						success: function (res) { 
+					//JSON.stringify(res)=>{"resultStr":"CODE_128,%001389","errMsg":"scanQRCode:ok"}
+		                             			if(res.errMsg=="scanQRCode:ok"){
+		                             				 
+		                             				var barcode=res.resultStr.split(',')[1].replace("-","");
+		                             				
+								if($("#barcodes").val().split(";").indexOf(barcode)!=-1){
+									alert("重复扫描")
+								}
+								else if(barcode=="undefined"){
+		                             					alert("该条码未识别，请重新扫描！")
+		                             				}
+								else{
+									$("#barcodes").val($("#barcodes").val()+barcode+";");
+		                             					var count=$("#barcodes").val().split(";").length-1
+                                                                                      				alert("成功扫描"+count+"种商品！");
+		                             				}
+					  		 }
+					  		else{
+					  			alert("扫描失败，请重试")
+					  		}
+					  	}
+					})	
+				});
+				wx.error(function (res) {//错误时调用
+                        				alert(res.errMsg);
+           				});
+			}	
+		}
+			
+
+		</script>
+	</head>
+
+	<body>
+	<%if flash[:notice].present?%>
+		<div id="error_explanation" class="alert alert-danger" style="margin:0px">
+	    	<h5><%=flash[:notice]%> </h5>
+	  	</div>
+	<%end%>
+	<input value="<%=@jsapi%>" id="ticket" hidden>
+	<input value="<%=@appid%>" id="appid" hidden>
+	<input value="<%=@openid%>" id="openid" hidden>
+	<div class="panel">
+	<div class="panel-body">
+		<h4>使用说明：</h4>
+		<p class="top-gap-1">第一步，请到公众号菜单栏的“会员中心”-“我的TIME”中登录mypost4u帐号。</p>
+		<p class="top-gap-1">第二步，点击“扫码”按钮，将待添加的商品条形码放入扫描框内，扫描成功后将提示已成功扫描的商品个数；继续点击“扫码”按钮，可添加多种商品。</p>
+		<p class="top-gap-1">第三步，<span style="color:red">点击“提交”按钮，所有已扫描的商品将被上传。</span></p>
+		<p class="top-gap-1">第四步，<span style="color:red">刷新官网阳光包税下单页面</span>，成功添加的商品信息将在“第二步 确认已选商品信息”区域显示，请继续后续操作。</p>
+		<p style="color:red">注意：阳光包税最多可添加15种商品</p>
+	</div>	
+	<%= form_tag(weixin_commodity_add_path, :method => "post",:class=>"myform") do %>	
+                <div class="form_search bottom-gap-1" style="padding:0px 10px">
+                     <a href="javascript:void(0)" onclick="scan()"> <input type="button" value="扫码" class="btn btn-info btn-block  bottom-gap-1" /> </a>
+                      
+                     <%=hidden_field_tag "barcodes"%>
+                     <input type="submit" value="提交" class="btn btn-primary  btn-block   bottom-gap-1" />
+                 </div>
+                 <%end%>
+               </div>
+	</body>
+</html>

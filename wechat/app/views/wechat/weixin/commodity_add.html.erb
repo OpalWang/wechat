@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<title>阳光包税下单</title>
+		<!--css-->
+		 <%= stylesheet_link_tag    'bootstrap.min'%>
+		  <%= stylesheet_link_tag    'wechat/style'%>
+		<!--js-->
+		<%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+		<%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+		
+	</head>
+
+	<body>
+		<%if @msg.present?%>
+			<div id="error_explanation" class="alert alert-danger">
+		    	<h5><%=@msg%> </h5>
+		  	</div>
+		<%end%>
+		<%if @info.present?%>
+			<div class="table-reponsive" id="pack-cart">
+		                    <table class="table">
+		                      <thead>
+		                        <tr>
+		                          <th>商品(单个包裹内货物总价值不超过2000元)</th>
+		                          <th>海关备案价值</th>
+		                          <th style="padding-left:26px">数量</th>
+		                          <th>操作</th>
+		                        </tr>
+		                      </thead>
+		                      <tbody>
+		                        <% @info.each do |rl|%>
+		                        <tr>
+		                          <td>
+		                              <div class="cart-text">
+		                                <p><%=rl["chinese_name"]%></p>
+		                                <p><%=rl["english_name"]%></p>
+		                              </div>
+		                              <%=hidden_field_tag 'selected_rls[]', rl["sys_commodity_no"]%>
+		                          </td>
+		                          <td><%=rl["declare_rmb_price"]%>人民币</td>
+		                          <td>
+		                            <div class="input-group pack-item-num">
+		                              <input type="number" name="<%=rl["sys_commodity_no"]%>_num" class="text-center form-control input-number rls-cookies rls-num rls-commodity"  min="1" value="1" style="width: 100% !important;" data-price="<%=rl["declare_rmb_price"]%>">
+		                          </div>
+		                          </td>
+		                          <td><%= link_to "删除"%></td>
+		                        </tr>
+		                        <% end %>
+		                      </tbody>
+		                    </table>      
+		               </div>
+
+		               <div class="address-form clearfix">
+		                      <div class="form-item" style="position: relative;">
+		                        <span class="item-text">重量(KG)＊：</span>
+		                        <%= text_field_tag('weight', params[:weight], class:"form-control") %>
+		                      </div>
+		                      <div class="form-item" style="position: relative;">
+		                        <span class="item-text">长(CM)＊：</span>
+		                        <%= text_field_tag('length', params[:length], class:"form-control") %>
+		                      </div>
+		                      <div class="form-item" style="position: relative;">
+		                        <span class="item-text">宽(CM)＊：</span>
+		                        <%= text_field_tag('width', params[:width], class:"form-control") %>
+		                      </div>
+		                      <div class="form-item" style="position: relative;">
+		                        <span class="item-text">高(CM)＊：</span>
+		                        <%= text_field_tag('height', params[:height], class:"form-control") %>
+		                      </div>
+		                      <div class="form-item" style="position: relative; width: 64%; margin-top: 33px;">
+		                        <span style="font-size: 10px; color: red;">重量按体积重和毛重，二者取大值。体积重：（长*宽*高）/6000；毛重≤20kg</span>
+		                      </div>
+		                      <div class="clearfix"></div>
+		                  </div>
+		                  <div class="text-right">
+		                     <button class="btn-style-1 btn btn-success  rls-submit" style="margin-top:20px;margin-right:20px; width:103px; line-height:27px; display:inline-block" name="commit" value="计算费用">计算费用</button>
+		                  </div>
+		<%end%>
+	</body>
+</html>
