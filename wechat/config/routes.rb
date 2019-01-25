@@ -66,7 +66,13 @@ Wechat::Engine.routes.draw do
   get 'parcel/pay'=>"parcel#pay"
   #支付
   get 'parcel_payment/new'=>"parcel_payment#new"
-  post 'parcel_payment/create'=>"parcel_payment#create"
+  post 'parcel_payment/credit_pay'=>"parcel_payment#credit_pay"
   get 'parcel_payment/oceanpay_redirect'=>"parcel_payment#oceanpay_redirect"
+  post 'parcel_payment/gen_second_sign'=>"parcel_payment#gen_second_sign"
+  post 'parcel_payment/pre_wxpay'=>"parcel_payment#pre_wxpay"
+  post 'parcel_payment/cancel'=>"parcel_payment#cancel"
+  post 'parcel_payment/wxpay_redirect'=>"parcel_payment#wxpay_redirect"
+  post 'parcel_payment/coupon_exchange'=>"parcel_payment#coupon_exchange"
+  post 'parcel_payment/coupon_restore'=>"parcel_payment#coupon_restore"
 
 end
