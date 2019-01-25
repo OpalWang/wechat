@@ -74,5 +74,12 @@ Wechat::Engine.routes.draw do
   post 'parcel_payment/wxpay_redirect'=>"parcel_payment#wxpay_redirect"
   post 'parcel_payment/coupon_exchange'=>"parcel_payment#coupon_exchange"
   post 'parcel_payment/coupon_restore'=>"parcel_payment#coupon_restore"
+  #IdInfo
+  get 'id_info/show'=>"id_info#show"
+  get 'id_info/new'=>"id_info#new"
+  post 'id_info/create'=>"id_info#create"
+  get 'id_info/delete'=>"id_info#delete"
+  get 'id_info/edit'=>"id_info#edit"
+  post 'id_info/update'=>"id_info#update"
 
 end
