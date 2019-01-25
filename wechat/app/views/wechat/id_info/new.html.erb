@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+         <%= stylesheet_link_tag    'bootstrap.min'%>
+          <%= stylesheet_link_tag    'wechat/framework'%>
+          <%= stylesheet_link_tag    'wechat/weui.mini'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/mobile_adapter', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/weixin', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/jweixin', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/zepto.min', 'data-turbolinks-track' => true %>
+        
+    </head>
+    <body style="line-height:0px" ontouchstart="">
+         <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/tianjiajijianren.png">
+            </div>
+            <div class="col-10 pull-left" style="padding-top:5px;">
+                <p class="pull-left col-12 header-title-pay">身份证信息上传</p>
+                <p class="pull-left col-12 header-sub-title">支持上传图片格式: jpg, jpeg, png, gif</p>
+            </div>
+        </div>
+
+              <% if flash[:notice].present? %>
+                            <div id="error_explanation" class="alert alert-danger">
+                                <%=flash[:notice]%>
+                            </div>
+              <% end %>
+              <%=form_tag id_info_create_path, method: "post", name: "id-form",multipart: true do%>
+                <%=hidden_field_tag "id_num", @id_num%>
+                <%=hidden_field_tag "telephone", @telephone%>
+                
+                    <div class=" uploader js_show">
+                        <div class="page__hd">
+                        </div>
+                        <div class="page__bd">
+                            <div id="gallery" class="weui-gallery" style="z-index:2000;opacity:1;display:none;">
+                                <div id="galleryImg" class="weui-gallery__img" style="background-image:url(./images/pic_160.png)">
+                                </div>
+                                <div class="weui-gallery__opr"> 
+                                    <a class="weui-gallery__del" id="del">
+                                        <i class="weui-icon-delete weui-icon_gallery-delete"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="weui-cells weui-cells_form" style="margin-top:0px">
+                              <div class="weui-cell">
+                                <div class="weui-cell__db" style="flex:1">
+                                    <div class="weui-uploader">
+                                        <div class="weui-uploader__hd">
+                                            <p class="weui-uploader__title">身份证号：<%= @id_num%> 正面上传</p>
+                                        </div>
+                                        <div class="weui-uploader__bd">
+                                            <ul id="uploaderFiles" class="weui-uploader__files">
+                                            </ul>
+                                            <div class="weui-uploader__input-box uploaderInput">
+                                                <%= file_field_tag 'uploaderInput',accept:"image/*",multiple:true,class:"weui-uploader__input"%>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              </div>
+                            </div> <!-- weui-cells_form -->
+                          </div> <!-- page__bd -->
+                          <div class="page__bd">
+                            <div id="gallery1" class="weui-gallery" style="z-index:2000;opacity:1;display:none">
+                                <span id="galleryImg1" class="weui-gallery__img" style="background-image:url(./images/pic_160.png)">
+                                </span>
+                                <div class="weui-gallery__opr"> 
+                                    <a class="weui-gallery__del"  id="del1">
+                                        <i class="weui-icon-delete weui-icon_gallery-delete"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="weui-cells weui-cells_form" style="margin-top:0px">
+                              <div class="weui-cell">
+                                <div class="weui-cell__db" style="flex:1">
+                                    <div class="weui-uploader">
+                                        <div class="weui-uploader__hd">
+                                            <p class="weui-uploader__title">身份证号：<%= @id_num%> 反面上传</p>
+                                        </div>
+                                        <div class="weui-uploader__bd">
+                                            <ul id="uploaderFiles1" class="weui-uploader__files">
+                                            </ul>
+                                            <div class="weui-uploader__input-box uploaderInput1">
+                                                <%= file_field_tag 'uploaderInput1',accept:"image/*",multiple:true,class:"weui-uploader__input"%>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              </div>
+                            </div> <!-- weui-cells_form -->
+                          </div> <!-- page__bd -->
+                    </div> <!-- page -->
+                
+                <div class="scroll-attachment"></div>
+
+                <div class="footer bg-pure">
+                    <button class="btn btn-success btn-block" id="id-submit"  type="button">提交</button>
+                     <%=link_to wechat.id_info_show_path(id_num:@id_num,telephone:@telephone) do %><button type="button" class="btn btn-default btn-block">返回</button><%end%>
+                </div>
+              <%end%>
+              <script class="uploader js_show" type="text/javascript">
+                        $(function(){ 
+                            var tmpl = '<li class="weui-uploader__file" style="background-image:url(#url#)"></li>', $gallery = $("#gallery"), $galleryImg = $("#galleryImg"), $uploaderInput = $("#uploaderInput"), $uploaderFiles = $("#uploaderFiles"), $uploaderInput1 = $("#uploaderInput1"), $uploaderFiles1 = $("#uploaderFiles1"),$gallery1 = $("#gallery1"), $galleryImg1 = $("#galleryImg1");
+                             $uploaderInput.on("change", function(e){ 
+                                var src, url = window.URL || window.webkitURL || window.mozURL, files = e.target.files; 
+                                var allowTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+                                var maxSize = 1024 * 5 * 1024;
+                                var file = files[files.length-1];
+                                if($("#uploaderFiles").children("li").length==0){   
+                                        if (allowTypes.indexOf(file.type) === -1) {
+                                            alert("该类型不允许上传")
+                                        }else{
+                                            // if (file.size > maxSize){
+                                            //     alert("图片太大，不允许超过5M")
+                                            // }else{
+                                                if (url) { src = url.createObjectURL(file); }
+                                               else { src = e.target.result; } 
+                                               $(".uploaderInput").attr('style','display:none');
+                                               $uploaderFiles.append($(tmpl.replace('#url#', src))); 
+                                            // }
+                                       }
+                             }
+                             }); 
+                              $uploaderInput1.on("change", function(e){ 
+                                var src, url = window.URL || window.webkitURL || window.mozURL, files = e.target.files; 
+                                var allowTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+                                var maxSize = 1024 * 5 * 1024;
+                                var file = files[files.length-1];
+                                if($("#uploaderFiles1").children("li").length==0){   
+                                        if (allowTypes.indexOf(file.type) === -1) {
+                                            alert("该类型不允许上传")
+                                        }else{
+                                            // if (file.size > maxSize){
+                                            //     alert("图片太大，不允许超过5M")
+                                            // }else{
+                                                if (url) { src = url.createObjectURL(file); }
+                                               else { src = e.target.result; } 
+                                               $(".uploaderInput1").attr('style','display:none');
+                                               $uploaderFiles1.append($(tmpl.replace('#url#', src)));
+                                            //}
+                                       }
+                                   }
+                             
+                             }); 
+                             $uploaderFiles.on("click", "li", function(){ 
+                                $galleryImg.attr("style", this.getAttribute("style"));
+                                $gallery.fadeIn(100); 
+                             }); 
+                            $gallery.on("click", function(){ $gallery.fadeOut(100); });
+                            $uploaderFiles1.on("click", "li", function(){ 
+                                $galleryImg1.attr("style", this.getAttribute("style"));
+                                $gallery1.fadeIn(100); 
+                             }); 
+                            $gallery1.on("click", function(){ $gallery1.fadeOut(100); });
+                            $("#del").click(function() { 
+                                $uploaderFiles.find("li").first().remove();
+                                $(".uploaderInput").attr('style','display:block');
+                            });
+                            $("#del1").click(function() { 
+                                $uploaderFiles1.find("li").first().remove();
+                                $(".uploaderInput1").attr('style','display:block');
+                            });
+                            $("#id-submit").click(function(event){
+                                event.preventDefault()
+                                var error = ""
+                                var front=$("#uploaderFiles").children("li").length==1
+                                var back=$("#uploaderFiles1").children("li").length==1
+                                front ? '' :  error += "请上传身份证正面图片\n"
+                                back ? '' :  error += "请上传身份证反面图片\n"
+                                if(error){
+                                    alert(error);
+                                }else{
+                                    $("form[name='id-form']").submit();
+                                }
+                            })
+                         });
+                    </script>
+    </body>
+</html>
