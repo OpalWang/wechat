@@ -9,6 +9,7 @@
         <%= stylesheet_link_tag    'wechat/style'%>
         <%= stylesheet_link_tag    'wechat/framework'%>
         <!--js-->
+        <%= javascript_include_tag "application", 'data-turbolinks-track' => true  %>
         <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
         <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
     </head>
@@ -122,11 +123,11 @@
                             </div>
             <%end%>
         </div>
-
+        <%=hidden_field_tag 'token', session[:token]%>
         <div class="scroll-attachment double"></div>
 
         <div class="footer bg-pure">
-            <button type="submit" class="btn btn-success btn-block">提交订单</button>
+            <%=submit_tag "提交订单",class: "btn btn-success btn-block",data: { disable_with: "提交中..." }%>
             <%if session[:shpmt_product]=="阳光包税专线"%>
                             <%=link_to wechat.parcel_ygbs_new_path do%>
                                           <button type="button" class="btn btn-default btn-block">修改订单</button>
@@ -138,5 +139,8 @@
               <%end%>
         </div>
         <%end%>
+        <script>
+            history.pushState(null, null, document.URL); window.addEventListener('popstate', function () { history.pushState(null, null, document.URL); });
+        </script>
     </body>
 </html>
