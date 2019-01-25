@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>我的TIME</title>
+        <!--css-->
+        <%= stylesheet_link_tag    'bootstrap.min'%>
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/mobile_adapter', 'data-turbolinks-track' => true %>
+    </head>
+    <body>
+
+        <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img src="/assets/wechat/tianjiajijianren.png">
+            </div>
+            <div class="col-9 pull-left" style="padding-top:0.2rem;">
+                <p class="pull-left col-12 header-title">身份证信息</p>
+                <p class="pull-left col-12 header-sub-title">SHOW</p>
+            </div>
+            <div class="col-1 pull-left text-left top-gap-1">
+                    <%=link_to wechat.weixin_parcel_list_path do%>
+                        <p class="pull-left col-12 header-title-return">返回</p>
+                    <%end%>
+            </div>
+        </div>
+             <% if flash[:notice] %>
+                            <div id="error_explanation" class="alert alert-danger">
+                                            <h5><%= flash[:notice] %> </h5>
+                            </div>
+             <%end%>
+             <%if @ids.present?%>
+                         <div class="clearfix bg-pure top-gap-1">
+                                <%@ids.each do |id|%>
+                                    <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;">
+                                                    <div class="bar-item col-3 pull-left">    
+                                                    <%if id.status=="approved"%>         
+                                                        <p class="bar-item-title text-blue"><%=Enum::VERIFY_STATUS[id.status]%></p>
+                                                    <%elsif id.status=="refused"%>
+                                                        <p class="bar-item-title red-text"><%=Enum::VERIFY_STATUS[id.status]%></p>
+                                                    <%else%>
+                                                        <p class="bar-item-title text-orange"><%=Enum::VERIFY_STATUS[id.status]%></p>
+                                                    <%end%>
+                                                    <p class="bar-item-title block light">
+                                                        <%=id.created_at.strftime("%Y-%m-%d %H:%S")%>
+                                                    </p>
+                                                    </div>
+                                                    <div class="bar-item col-9 pull-left" style="padding-left:5px">
+                                                        <p class="bar-item-title block hard"><%=id.id_num%></p>
+                                                        <%if id.status=="refused"%>
+                                                            <p class="bar-item-title block soft">审核意见：<%=id.refused_reason%></p>
+                                                             <%if id.telephone.present?%>
+                                                                <p class="bar-item-title block light">TEL: <%=id.telephone%></p>
+                                                             <%end%>
+                                                         <%else%>
+                                                            <%if id.telephone.present?%>
+                                                                <p class="bar-item-title block light">TEL: <%=id.telephone%></p>
+                                                            <%end%>
+                                                            <p class="bar-item-title block soft"><%=id.id_card_front_identifier%></p>
+                                                             <p class="bar-item-title block soft"><%=id.id_card_back_identifier%></p>
+                                                        <%end%>
+                                                    </div>
+                                                    <%if id.status!="approved"%>
+                                                            <div class="bar-item col-11 pull-left text-right">
+                                                                    <p class="bar-item-title block">
+                                                                        <%=link_to id_info_edit_path(id:id.id), data: {ajax: "false"} do %>
+                                                                                    <span class="bar-item-title light glyphicon glyphicon-edit"></span>
+                                                                        <%end%>
+                                                                    </p>
+                                                            </div>
+                                                            <div class="bar-item col-1 pull-left text-right">
+                                                                    <p class="bar-item-title block">
+                                                                        <%=link_to id_info_delete_path(id:id.id), onclick:"return confirm('确定删除？')" do %>
+                                                                                    <span class="bar-item-title light glyphicon glyphicon-remove"></span>
+                                                                        <%end%>
+                                                                    </p>
+                                                            </div>
+                                                    <%end%>
+                                    </div>
+                                <%end%>
+                        </div>
+              <%else%>          
+                        <div class="clearfix" style="margin-bottom:50px"></div>
+                        <div class="footer bg-pure">
+                            <div class="text-center">
+                               <%=link_to id_info_new_path(id_num:params["id_num"],telephone:params["telephone"]) do %>
+                                    <img src="/assets/wechat/tianjiajian.png">
+                                    <span class="new-address left-gap-1">添加身份证正反面</span>
+                               <%end%>
+                            </div>
+                        </div>
+            <%end%>
+     </body>
+</html>        
