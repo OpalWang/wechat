@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>待支付包裹</title>
+        <!--css-->
+        
+         <%= stylesheet_link_tag    'bootstrap.min'%>
+          <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+         <%= stylesheet_link_tag    'wechat/pay'%>
+        <!--js-->
+        <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/mobile_adapter', 'data-turbolinks-track' => true %>
+    </head>
+
+    <body>
+           <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img class="full-img" src="/assets/wechat/new_version/icon.png">
+            </div>
+            <div class="col-9 pull-left" style="padding-top:0.2rem;">
+                <p class="pull-left col-12 header-title-pay">待支付包裹</p>
+                <p class="pull-left col-12 header-sub-title">发件国家相同的包裹可以一起支付</p>
+            </div>
+            <div class="col-1 pull-left" style="padding-top:0.2rem;" >
+              <%=link_to wechat.weixin_parcel_list_path do%>
+                    <p class="pull-left col-12 header-title-return">返回</p>
+                <%end%>
+            </div>
+          </div>
+          
+            <%if flash[:notice].present?%>
+                    <div id="error_explanation" class="alert alert-info">
+                        <%=flash[:notice]%>
+                    </div>
+                <%end%>
+            <div id="error_explanation" class="alert alert-danger" style="display:none"></div>
+           <div class="clearfix bg-pure top-gap-1">
+                  <%=hidden_field_tag "country",@country%>
+                  <div class="bar" style="overflow-x: hidden;">
+                        <div class="bar-item col-4 pull-left">          
+                            <span class="bar-item-title font-30 color-soft country-select">全部</span>
+                            <div class="highline" style=<%="#{@country=='all' ? 'dispay:block' : 'display:none'}"%>>
+                              <img class="full-img" style="float:left;" src="/assets/wechat/new_version/heng.png">
+                            </div>
+                        </div>
+                        <div class="bar-item col-5 pull-left">          
+                            <span class="bar-item-title font-30 color-soft country-select">中国发件</span>
+                            <div class="highline" style=<%="#{@country=='cn' ? 'dispay:block' : 'display:none'}"%>>
+                              <img class="full-img" style="float:left;" src="/assets/wechat/new_version/heng.png">
+                            </div>
+                        </div>
+                        <div class="bar-item col-3 pull-left">          
+                            <span class="bar-item-title font-30 color-soft country-select">德国发件</span>
+                            <div class="highline" style=<%="#{@country=='de' ? 'dispay:block' : 'display:none'}"%>>
+                              <img class="full-img" style="float:left;" src="/assets/wechat/new_version/heng.png">
+                            </div>
+                        </div>
+                  </div>
+                  
+                <%if @parcels.present? %>
+                          
+                    <%= form_tag(parcel_payment_new_path, :method => "get", class:"form-inline") do %>
+                        <%=hidden_field_tag "type", @pay_type%>
+                        <%@parcels.each do |p|%>
+                                <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;border-top:none;border-bottom: 1px solid #eee;">
+                                    <div class="bar-item col-1 pull-left">          
+                                        <span class="bar-item-title soft"><%= check_box_tag 'parcel_num[]', p["parcel_num"] %></span>
+                                    </div>
+                                    <div class="bar-item col-7 pull-left">          
+                                        <p class="bar-item-title block hard"><%=p["parcel_num"]%></p>
+                                        <p class="bar-item-title block hard"><%=p["recipient"]%></p>
+                                    </div>
+                                    <div class="bar-item col-1 pull-left">
+                                        <span class="bar-item-title light">&nbsp;<%=p["country"].present? ? sndr_cntry_desc(p["country"]) : ""%></span>
+                                    </div>
+                                    <div class="bar-item col-3 pull-left text-right">
+                                        <p class="bar-item-title light">
+                                        <% if p["product"] == "阳光包税专线" %>
+                                          杂货包税专线
+                                        <%else%>
+                                          <%=p["product"]%>
+                                        <%end%> 
+                                        </p>
+                                        <p class="bar-item-title block font-28 red">€<%=p["price"]%></p>
+                                        
+                                    </div>
+                                </div>
+                        <%end%>
+
+                            <!-- 翻页器 -->
+                            <div class="bottom-pagination">
+                              <ul>
+                                <% if @page != 1 %>
+                                  <li>
+                                    <a href="#" data-page="<%=@page-1%>" class="page-w">上一页</a>
+                                  </li>
+                                  <li>
+                                    <a href="#" data-page="1" class="page-w">1</a>
+                                  </li>
+                                  <li style="margin: 0px;min-width: 5px;">.</li><li style="margin: 0px;min-width: 5px;">.</li>
+                                <% end %>
+                                <!-- 当前页面 -->
+                                <li class="active">
+                                  <span><%=@page%></span>
+                                </li>
+                                <% if @page != @total_pages%>
+                                  <li style="margin: 0px;min-width: 5px;">.</li><li style="margin: 0px;min-width: 5px;">.</li>
+                                  <li>
+                                    <a href="#" data-page="<%=@total_pages%>" class="page-w"><%=@total_pages%></a>
+                                  </li>
+                                  <li>
+                                    <a href="#" data-page="<%=@page+1%>" class="page-w">下一页</a>
+                                  </li>
+                                <% end %>
+                                <%=hidden_field_tag "per_page", @per_page%>
+                              </ul>
+                            </div>
+                      
+                          <div class="scroll-attachment double"></div>
+
+                          <div class="footer-pay bg-pure">
+                              <div class="bar" style="overflow-x: hidden;">
+                                    <div class="bar-item col-1 pull-left" style="padding-top:0.1rem">          
+                                        <span class="bar-item-title soft"><%= check_box_tag 'selectFlag', '', false, onclick:'checkAll(this)' %></span>
+                                    </div>
+                                    <div class="bar-item col-8 pull-left" style="padding-top:0.1rem">          
+                                        <p class="bar-item-check">全选</p>
+                                    </div>
+                                    <div class="bar-item col-3 pull-left">          
+                                         <button class="btn btn-pay" id="pay-submit" type="submit">去支付</button>
+                                    </div>
+                                </div>
+                          </div>
+                   <%end%>
+                <%else%>
+                   <div class="filter_actions h4 col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:1rem"><img src="/assets/wechat/empty-box.png"></div>
+                  <div class="filter_actions col-xs-offset-2 col-xs-8 text-center font-24" style="margin-top:0.5rem;color:#DADADA;">暂无更多了</div>
+                <%end%>
+          </div>
+          <script>
+            $(".page-w").click(function(){
+                  var current_path = location.pathname;
+                  window.location.href="/wechat/parcel/wait_pay?per_page="+$("#per_page").val()+"&page="+$(this).attr("data-page")
+            });
+            
+            $(".country-select").click(function(){
+                  if($(this).html()=="中国发件"){
+                    $("#country").val("cn");
+                  }else if($(this).html()=="德国发件"){
+                    $("#country").val("de");
+                  }
+                  else if($(this).html()=="全部"){
+                    $("#country").val("all");
+                  }
+                  var current_path = location.pathname;
+                  window.location.href="/wechat/parcel/wait_pay?country="+$("#country").val()
+            });
+            </script>
+            <style>
+              .bar:last-of-type{
+                  border-bottom: none;
+              }
+            </style>
+    </body>
+    
+</html>
