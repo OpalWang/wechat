@@ -64,6 +64,8 @@ Wechat::Engine.routes.draw do
   get 'parcel/delete_ml'=>"parcel#delete_ml"
   post 'parcel/change_quantity'=>"parcel#change_quantity"
   get 'parcel/pay'=>"parcel#pay"
+  get 'parcel/wait_pay'=>"parcel#wait_pay"
+  get 'parcel/posting_file'=>"parcel#posting_file"
   #支付
   get 'parcel_payment/new'=>"parcel_payment#new"
   post 'parcel_payment/credit_pay'=>"parcel_payment#credit_pay"
