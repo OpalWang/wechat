@@ -1,25 +1,42 @@
  <header class="w-header clearfix">
-    <div class="w-avatar">
-        <img src="/assets/wechat/avatar.png">
+    <div class="w-header-logo">
+        <img class="full-img"  src="/assets/wechat/new_version/logo.png">
     </div>
     <div class="w-header-content">
         <%if @wui%>
-            <p>
-                欢迎，<%=@wui.user_nickname%>
-            </p>
-            <P>
-                    <%if @wui.user_rank=="platinum"%>
-                        白金会员
-                    <%elsif @wui.user_rank=="diamond"%>
-                        钻石会员
-                    <%else%>
-                        TIME会员
+            <div class="col-12 pull-left">
+                <div class="col-9 pull-left">
+                    <span class="font-30" style="color:#fff">
+                        <%=@wui.email%>
+                    </span>
+                </div>
+                <%if @page.present?&&@page=="products_page"%>
+                        <div class="col-3 pull-left text-right">
+                            <a href="/wechat/weixin/home"><img style="height:0.4rem;"  src="/assets/wechat/new_version/home.png"></a>
+                        </div>
+                <%else%>
+                    <%if @wui.user_type!="default"&&@wuis.count>1%>
+                        <div class="col-3 pull-left text-right">
+                            <a href="/wechat/weixin/logout"><img style="height:0.4rem;"  src="/assets/wechat/new_version/logout.png"></a>
+                        </div>
                     <%end%>
-            </P>
+                <%end%>
+            </div>
+            <div class="col-12 pull-left" style="margin-top:0.28rem">
+                    <%if @wui.user_rank=="platinum"%>
+                        <img style="height:0.53rem;"  src="/assets/wechat/new_version/platinum_icon.png">
+                    <%elsif @wui.user_rank=="diamond"%>
+                        <img style="height:0.53rem;"  src="/assets/wechat/new_version/zuanshi_icon.png">
+                    <%else%>
+                        <img style="height:0.53rem;"  src="/assets/wechat/new_version/putong_icon.png">
+                    <%end%>
+            </div>
         <%else%>
-            <p>
-            <a href="/wechat/weixin/login">登录</a>／<a href="<%="#{Settings.wechat.call_remove_url}/users/sign_up?wechat=y"%>">注册</a>
-            </p>
+            
+            <div class="col-12 pull-left font-30" style="color:#fff">
+                <a href="/wechat/weixin/login" style="color:#fff">登录</a>／<a href="/wechat/weixin/registration"  style="color:#fff">注册</a>
+            </div>
+            
         <%end%>
     </div>
 </header>
