@@ -10,6 +10,7 @@ class WeixinController < ApplicationController
 	#1. 接收到MsgType，Event，EventKey, 回复 "请输入包裹号或者国际运单号"
 	#2. 根据包裹号或者国际运单号返回最新物流信息
 	#3. 用户绑定跳转页面
+	
 	def menu
 		logger.info("into menu")
 		request.body.rewind
@@ -26,10 +27,8 @@ class WeixinController < ApplicationController
 		xbuilder = Builder::XmlMarkup.new(:target => ret_xml="")
 		if msg_type=="event"
 			event=doc.xml.Event.content
-			event_key=doc.xml.EventKey.content
-			logger.info("event_key: #{event_key}")
-			# if event=="subscribe"
-			# 	 logger.info("into subscribe")
+			 if event=="subscribe"
+			 	 logger.info("into subscribe")
 			# 	 title="欢迎关注 Europe Time Express！"
 			# 	 descp="我们致力于为您提供最快的物流，最好的服务。请点击查看使用指南。"
 			# 	 picUrl="http://mmbiz.qpic.cn/mmbiz_jpg/xg5dgG6ib5HvUNPjzppqJoI96RndVq0I5IeicoSNsfxbDkuZia6fVhT0mkKiaTxdw0DXbe7EScW67icdib2GM2icibAWWg/0?wx_fmt=jpeg"
@@ -62,8 +61,50 @@ class WeixinController < ApplicationController
 			# 				}
 			# 			}
 			# 		}
-			# 	}
-			if event=="CLICK"
+					xbuilder.xml{
+						xbuilder.ToUserName{
+							xbuilder.cdata! from_username
+						}
+						xbuilder.FromUserName{
+							xbuilder.cdata! to_username
+						}
+						xbuilder.CreateTime Time.now.to_i
+						xbuilder.MsgType {
+							xbuilder.cdata! "text"
+						}
+						xbuilder.Content {
+							xbuilder.cdata! "欢迎关注 Europe Time Express！\n请点击“个人中心”-“帐号绑定”，完成操作后即可共享官网帐号的积分优惠！\n参加”我的TIME”-”分享有礼”活动，即可获得无门槛3欧元代金券，下单立减！"
+						}
+					}
+					#默认以微信号登录，打标签mypost4u
+					session[:openid]=params["openid"]
+					Thread.new do
+			                                     	status,msg=WeixinUserInfo.subscribe(params["openid"])
+						if status==false
+			                                     		Rails.logger.info("subscribe_wx_user fail: #{msg}")
+			                                      	CallbackQueue.create!(
+			                                                  callback_interface: "wx_subscribe_request",
+			                                                  reference_id: params["openid"],
+			                                                  status: "init",
+			                                                  try_amount: 5,
+			                                                  tried_amount: 0
+			                                             )
+			                                      end
+			                         end
+			elsif event=="unsubscribe"
+				logger.info("into unsubscribe")
+				release_user(from_username)
+				xbuilder.xml{
+					xbuilder.ToUserName{
+						xbuilder.cdata! to_username
+					}
+					xbuilder.FromUserName{
+						xbuilder.cdata! from_username
+					}
+				}
+			elsif event=="CLICK"
+				event_key=doc.xml.EventKey.content
+				logger.info("event_key: #{event_key}")
 				if event_key=="trickinginfo"
 					xbuilder.xml{
 						xbuilder.ToUserName{
@@ -77,23 +118,7 @@ class WeixinController < ApplicationController
 							xbuilder.cdata! "text"
 						}
 						xbuilder.Content {
-							xbuilder.cdata! "请输入国际运单号或者包裹号前14位"
-						}
-					}
-				elsif event_key=="index"
-					xbuilder.xml{
-						xbuilder.ToUserName{
-							xbuilder.cdata! from_username
-						}
-						xbuilder.FromUserName{
-							xbuilder.cdata! to_username
-						}
-						xbuilder.CreateTime Time.now.to_i
-						xbuilder.MsgType {
-							xbuilder.cdata! "text"
-						}
-						xbuilder.Content {
-							xbuilder.cdata! "登录帐号，更多精彩等着你！"
+							xbuilder.cdata! "请输入国际物流号或者包裹编号前14位"
 						}
 					}
 				elsif event_key=="credit_gift"
@@ -158,37 +183,15 @@ class WeixinController < ApplicationController
 				end
 
 			elsif event=="VIEW"
-				event_key=doc.xml.EventKey.content
-				logger.info("event_key: #{event_key}")
 				logger.info("into url oauth")
-			elsif event=="scancode_push"&&event_key=="rselfmenu_0_1"
-				logger.info("into scan")
-				content=doc.xml.ScanCodeInfo.ScanResult.content.match(/(CODE_128),(.*)/)
-				if content
-
-					xbuilder.xml{
-						xbuilder.ToUserName{
-							xbuilder.cdata! from_username
-						}
-						xbuilder.FromUserName{
-							xbuilder.cdata! to_username
-						}
-						xbuilder.CreateTime Time.now.to_i
-						xbuilder.MsgType {
-							xbuilder.cdata! "text"
-						}
-						xbuilder.Content {
-							xbuilder.cdata! "#{content[2]}"
-						}
-					}
-				end
+				session[:openid]=params["openid"]
 		  	end
 		elsif msg_type=="text"
 			content=doc.xml.Content.content
 			logger.info("content: #{content}")
-			if content.upcase.gsub(" ","")=="FXSJF"
+			if content.upcase.gsub(" ","")=="FXYL"
 				if params["openid"].present?
-					WeixinShareLog.create(openid: params["openid"],server_type: "overseas",theme: "wechat_share_gift", status: "failure",log: "FXSJF")
+					WeixinShareLog.create(openid: params["openid"],server_type: "overseas",theme: "wechat_share_voucher", status: "failure",log: "FXYL")
 					xbuilder.xml{
 						xbuilder.ToUserName{
 							xbuilder.cdata! from_username
@@ -201,49 +204,34 @@ class WeixinController < ApplicationController
 							xbuilder.cdata! "text"
 						}
 						xbuilder.Content {
-							xbuilder.cdata! "感谢您的备注! 我们将核实信息后为您赠送积分 ！"
+							xbuilder.cdata! "感谢您的备注! 我们将核实信息后为您赠送折扣券 ！"
 						}
 					}
 				end
-			elsif content.upcase.gsub(" ","")=="客服"
-				xbuilder.xml{
-					xbuilder.ToUserName{
-						xbuilder.cdata! from_username
-					}
-					xbuilder.FromUserName{
-						xbuilder.cdata! to_username
-					}
-					xbuilder.CreateTime Time.now.to_i
-					xbuilder.MsgType {
-						xbuilder.cdata! "transfer_customer_service"
-					}
-				}
-  			else
-				msg,@parcel,@pd,@ptis=WeixinUserInfo.getTrackingInfoByOverseasHost(content.upcase.to_s)
+			
+  			elsif content.gsub(" ","").scan(/[a-zA-Z0-9]{10,20}/)[0]==content.gsub(" ","")
+				msg,@parcel,@pd,@ptis=WeixinUserInfo.getTrackingInfoByOverseasHost(content.gsub(" ","").upcase.to_s)
 				if @ptis.present?
-					i=0
-					@ptis.each do |time,tracking_info|
-						i+=1
-						if i==@ptis.count
-							recontent="包裹最新物流信息:\n#{tracking_info.to_s}"
-							xbuilder.xml{
-								xbuilder.ToUserName{
-											xbuilder.cdata! from_username
-								}
-								xbuilder.FromUserName{
-											xbuilder.cdata! to_username
-								}
-								xbuilder.CreateTime Time.now.to_i
-								xbuilder.MsgType {
-											xbuilder.cdata! "text"
-								}
-								xbuilder.Content {
-											xbuilder.cdata! recontent
-								}
-						 	}
-						end
+					pti=@ptis[0]
+					pti.each do |time,tracking_info|
+						recontent="包裹最新物流信息:\n#{tracking_info.to_s}"
+						xbuilder.xml{
+							xbuilder.ToUserName{
+										xbuilder.cdata! from_username
+							}
+							xbuilder.FromUserName{
+										xbuilder.cdata! to_username
+							}
+							xbuilder.CreateTime Time.now.to_i
+							xbuilder.MsgType {
+										xbuilder.cdata! "text"
+							}
+							xbuilder.Content {
+										xbuilder.cdata! recontent
+							}
+					 	}
 					end
-				elsif p = Parcel.where("parcel_num like ? or ishpmt_num=?","#{content.upcase.to_s}%%",content.upcase.to_s).first
+				elsif p = Parcel.where("parcel_num like ? or ishpmt_num=?","#{content.gsub(" ","").upcase.to_s}%%",content.gsub(" ","").upcase.to_s).first
 					pti=ParcelTrackingInfo.where(parcel_num: p.parcel_num).order('created_at DESC').first
 					status_hash= {'returned'=>'入库处理中','on-the-way'=>'运输途中','delivering'=>'投递中','sorted'=>'上网','sent-back'=>'被退回', 'initialized'=>'创建成功', 'in-process'=>'处理中', 'blocked'=>'被拦截','applying-for-cancellation'=>'申请取消','closed'=>'已关闭','cancelled'=>'已取消'}
 					recontent="包裹当前状态: #{status_hash[p.max_in_status.to_s]}\n最新物流信息:\n#{pti.tracking_info.to_s}"
@@ -277,17 +265,58 @@ class WeixinController < ApplicationController
 									xbuilder.cdata! "text"
 						}
 						xbuilder.Content {
-									xbuilder.cdata! "该国际运单号或者包裹号前14位不存在，请重新输入! 如有其他问题，请回复“客服”, 我们将继续为您提供服务。"
+									xbuilder.cdata! "该国际物流号或者包裹编号前14位不存在，请重新输入! "
 						}
 					}
 				end
+			else
+				time=Time.now
+				logger.info("Time.now:#{time}")
+				time=Time.now+8.hour if Rails.env.test?
+				if time.wday==6||time.wday==0||time<time.beginning_of_day+9.hour||time>time.end_of_day-1.hour
+					xbuilder.xml{
+						xbuilder.ToUserName{
+									xbuilder.cdata! from_username
+						}
+						xbuilder.FromUserName{
+									xbuilder.cdata! to_username
+						}
+						xbuilder.CreateTime Time.now.to_i
+						xbuilder.MsgType {
+									xbuilder.cdata! "text"
+						}
+						xbuilder.Content {
+									xbuilder.cdata! "您好，已收到您的留言，我们会尽快回复~客服在线时间为：周一至周五 8：00-16：00（节假日除外），请尽量在工作时间内咨询噢~"
+						}
+				 	}
+				
+				else
+					xbuilder.xml{
+						xbuilder.ToUserName{
+							xbuilder.cdata! from_username
+						}
+						xbuilder.FromUserName{
+							xbuilder.cdata! to_username
+						}
+						xbuilder.CreateTime Time.now.to_i
+						xbuilder.MsgType {
+							xbuilder.cdata! "transfer_customer_service"
+						}
+					}
+				end
+			
 			end
 		end
 
 		logger.info("ret [#{ret_xml}]")
 		render plain: ret_xml and return
 	end
-
+	#取消关注后的操作
+	def release_user(openid)
+		WeixinUserInfo.where(wechat_id:openid).update_all(status:"cancelled")
+	end						
+						
+					
 	def login
 		logger.info("into login")
 		#session[:openid]="o-1VYwucgSpd2kqPKfq1H71rSzoY"
@@ -1011,6 +1040,94 @@ class WeixinController < ApplicationController
 	end
 
 	def production_intr_fba
+	end
+	
+	def registration
+	end
+	def check_email
+		status="failure"
+		info=""
+		if params[:email].present?
+			status,msg,info=WeixinUserInfo.getEmailValidateByOverseasHost(params[:email])
+			if msg.present?
+				Rails.logger.info("check_email error:#{msg}")
+			end
+		end
+		session[:code]=info["varify_code"]
+		session[:time]=info["expired_time"]
+		render json: { status:status,info:info }.to_json
+	end
+	#注册
+	def register
+		begin
+			Rails.logger.info("into register")
+			@message=""
+			@status=false
+			@user = User.new
+			msg=[]
+			msg=check_register_params(params)
+			if msg.blank?
+				status,info=WeixinUserInfo.getRegisterByOverseasHost(params["email"],params["nickname"],params["password"],"wechat")
+				if status=="success"
+					@status=true
+					session[:code]=nil
+					session[:time]=nil
+				else
+					@message=info
+					flash[:info]=@message
+				end
+			else
+				@message=msg.join("; ")
+				flash[:info]=@message
+			end
+		rescue => e
+			@message=e.message
+			Rails.logger.info("register rescue:#{@message}")
+		ensure
+			if @status==false
+				render :registration
+			else
+				redirect_to weixin_login_path and return
+			end
+		end
+		
+	end
+
+	def check_register_params(params)
+		msg=[]
+
+		if params["email"].blank?
+			msg<<"邮箱不能为空"
+		end
+		if params["verification_code"].blank?
+			msg<<"验证码不能为空"
+		elsif params["code"].blank?
+			msg<<"验证码错误"
+		elsif params["time"].blank?
+			msg<<"验证码错误"
+		end
+		if params["nickname"].blank?
+			msg<<"用户名不能为空"
+		end
+		if params["password"].blank?
+			msg<<"密码不能为空"
+		elsif params["password"].gsub(" ","").size<8
+			msg<<"密码至少8位"
+		end
+		
+		if params["verification_code"].present?&&params["code"].present?
+			if Digest::MD5.hexdigest(params["verification_code"])!=params["code"]
+				Rails.logger.info("verification_code wrong")
+				msg<<"验证码错误"
+			elsif params["time"].present?&&Time.parse(params["time"].to_s)<Time.now
+				Rails.logger.info("verification_code time expired")
+				msg<<"验证码错误"
+			end
+		end
+		@user.email=params["email"]
+		@user.nickname=params["nickname"]
+		@user.customer_num=params["verification_code"] #暂存验证码
+		msg
 	end
 
 	protected
