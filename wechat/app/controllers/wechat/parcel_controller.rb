@@ -3,6 +3,7 @@ class ParcelController < ApplicationController
 	protect_from_forgery
               skip_before_action :verify_authenticity_token, :only =>["set_quantity","calculate_price","commodity_create","add_commodity_nfzx","change_quantity","order_list"]
               before_action :auth_user,except: [:set_quantity]
+	      before_action :session_verified,:only=>"postal_create"
               
   	def ygbs_new
                          logger.info("[#{session[:openid]}] into ygbs_new")
@@ -244,6 +245,7 @@ class ParcelController < ApplicationController
                         else
                             @info=[]
                         end
+		        session[:token]=Wxpay.gen_random_str(20)
 	end
 
 	def add_commodity
@@ -697,10 +699,10 @@ class ParcelController < ApplicationController
 	                         	
               end
 
-	def params_transfer(params)
+	      def params_transfer(params)
                          logger.info("[#{session[:openid]}] into params_transfer: #{session[:shpmt_product]}")
-		parcels_params = Hash.new
-		parcels_params["shimpentProduct"] = session[:shpmt_product]
+			parcels_params = Hash.new
+			parcels_params["shimpentProduct"] = session[:shpmt_product]
                             if session[:shpmt_product]=="阳光包税专线" #阳光包税
                                            parcels_params["length"] = session[:length]
                                            parcels_params["height"] = session[:height]
@@ -771,7 +773,34 @@ class ParcelController < ApplicationController
                             parcels_params["syncflag"]=true
                             return parcels_params
               end
+	     
+	      def session_verified
+		if session[:token].blank?
+		    redirect_to weixin_parcel_list_path
+		else
+		    if session[:shpmt_product]=="阳光包税专线"
+			redirect_to wechat.parcel_ygbs_new_path, notice: "下单超时，请您重新操作" and return if session[:order_id].blank?||session[:fare].blank?||session[:price].blank?
+		    elsif session[:shpmt_product]=="NFZX"
+			redirect_to wechat.parcel_nfzx_new_path, notice: "下单超时，请您重新操作" and return if session[:ml_info].blank?||session[:nfzx_price].blank?
+		    elsif session[:shpmt_product]=="DHL"
+			redirect_to wechat.parcel_dhl_new_path, notice: "下单超时，请您重新操作" and return if session[:goods_info_dhl].blank?||session[:dhl_price].blank? 
+		    elsif session[:shpmt_product]=="DHL经济包"
+			redirect_to wechat.parcel_dhl_ec_new_path, notice: "下单超时，请您重新操作" and return if session[:goods_info_dhl_ec].blank?||session[:dhl_ec_price].blank?
+		    elsif session[:shpmt_product]=="CZ-EMS"
+			redirect_to wechat.parcel_cz_ems_new_path, notice: "下单超时，请您重新操作" and return if session[:goods_info_cz_ems].blank?||session[:cz_ems_price].blank?
+		    elsif session[:shpmt_product]=="E特快"
+			redirect_to wechat.parcel_etk_new_path, notice: "下单超时，请您重新操作" and return if session[:goods_info_etk].blank?||session[:etk_price].blank?
+		    elsif session[:shpmt_product]=="小包奶粉专线"
+			redirect_to wechat.parcel_cc_new_path, notice: "下单超时，请您重新操作" and return if session[:cc_info].blank?||session[:cc_price].blank?
+		    elsif session[:shpmt_product]=="小包食品保健品专线"
+			redirect_to wechat.parcel_bjcc_new_path, notice: "下单超时，请您重新操作" and return if session[:bj_order_id].blank?||session[:bjcc_fare].blank?||session[:bjcc_price].blank?
+		    elsif session[:shpmt_product].blank?
+			redirect_to weixin_parcel_list_path,notice:"下单超时，请您重新操作"
+		    end
+		end
+	    end
 
+		
 	protected
 	def auth_user
 	    	#session[:openid]="o-1VYwucgSpd2kqPKfq1H71rSzoY"
