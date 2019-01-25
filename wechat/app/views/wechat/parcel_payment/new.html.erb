@@ -3,161 +3,411 @@
 
              <head>
                            <meta name="viewport" content="width=device-width, initial-scale=1" >
-        		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
                            <title>支付平台--支付方式选择</title>
                            <!--css-->
                            <%= stylesheet_link_tag    'bootstrap.min'%>
-		        <%= stylesheet_link_tag    'wechat/style'%>
-		        <%= stylesheet_link_tag    'wechat/framework'%>
+                          <%= stylesheet_link_tag    'wechat/style'%>
+                          <%= stylesheet_link_tag    'wechat/framework'%>
+                          <%= stylesheet_link_tag    'wechat/pay'%>
                            <!--js-->
                            <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
                            <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
-                           <%= javascript_include_tag 'wechat/milk_brand', 'data-turbolinks-track' => true %>
                            <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'wechat/weixin', 'data-turbolinks-track' => true %>
+                         <%= javascript_include_tag 'md5', 'data-turbolinks-track' => true %>
+                         <%= javascript_include_tag 'wechat/mobile_adapter', 'data-turbolinks-track' => true %>
+                          <script>
+                                function randomString(len) {
+                                　　len = len || 20;
+                                　　var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+                                　　var maxPos = $chars.length;
+                                　　var pwd = '';
+                                　　for (i = 0; i < len; i++) {
+                                　　　　pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+                                　　}
+                                　　return pwd;
+                                }
+
+
+                                function onBridgeReady(prepay_id){
+                                  var prepay_id=prepay_id;
+                                  var appid=$("#appid").val();
+                                  var tmp = Date.parse( new Date() ).toString();
+                                  var timestamp=tmp.substr(0,10);
+                                  var noncestr=randomString(20);
+                                  var package="prepay_id="+prepay_id;
+                                  var signtype="MD5";
+                                  
+                                  
+                                 string="appId="+appid+"&nonceStr="+noncestr+"&package="+package+"&signType="+signtype+"&timeStamp="+timestamp+"&key="+"uH372sXm3dR8KFD9LScN61Aj4f59D31W";
+                                 paySign=hex_md5(string);
+                                 
+                                   WeixinJSBridge.invoke(
+                                       'getBrandWCPayRequest', {
+                                           "appId": appid,     //公众号名称，由商户传入     
+                                           "timeStamp":timestamp,         //时间戳，自1970年以来的秒数     
+                                           "nonceStr":noncestr, //随机串     
+                                           "package":package,     
+                                           "signType":signtype,         //微信签名方式：     
+                                           "paySign":paySign //微信签名 
+                                       },
+                                       function(res){     
+                                           if(res.err_msg == "get_brand_wcpay_request:ok" ) {
+                                              window.location.href="/wechat/weixin/parcel_list"
+                                           }else if(res.err_msg == "get_brand_wcpay_request:cancel"){
+                                                
+                                                if($("#pre_id").val()!=""){
+                                                  var pre_id=$("#pre_id").val();
+                                                  var url="/wechat/parcel_payment/cancel"
+                                                  $.ajax({
+                                                        url:url,
+                                                        method:"post",
+                                                        data:{prepay_id:pre_id},
+                                                        success:function(data){}
+                                                  })
+                                                }
+                                           }  
+                                            
+                                       } //function
+                                   ); //invoke
+                                }//onBridgeReady
+                          </script>
              </head>
 
-            <body>
-                        	<div id="main-content">
-	<%if flash[:notice].present?%>
-                            <div id="error_explanation" class="alert alert-warning" style="margin:0px">
-                                <h5><%=flash[:notice]%> </h5>
-                            </div>
+            <body class="gray">
+            
+    <%if flash[:notice].present?%>
+            <div id="error_explanation" class="alert alert-warning" style="margin:0px">
+                <h5><%=flash[:notice]%> </h5>
+            </div>
     <%end%>
-	<div id="payment">
-		<div class="col-style-1">
-			<div class="widget-2">
-			    <div id="basic-info" class="col-xs-12 table-responsive">
-	          			<table class="table">
-		          			<tbody>
-					      <tr>
-					      	<td></td>
-						<td style="width: 500px">
-							<%if @wui.user_rank=="diamond"%>
-					      			<p style="color:red">已为您扣除钻石会员特惠：快件产品每单已立减0.5欧元</p>
-					      		<%end%>
-							付款金额：<span class="light-font">&nbsp;&nbsp;<span style="color:#2B8A4F; font-weight: bold;"><%=currency_abbr("CNY")%> <%=session[:amount_cny]%> </span></span></td>
-					      </tr>
-					</tbody>
-			      	</table>
-			    </div>
-			</div>
-		<div class="clearfix"></div>
-		</div>
-		
-  	
-  	<%= form_tag(wechat.parcel_payment_create_path, :method => "post",:class=>"myform",:name=> "pm-form") do %>
-  	 	<%=hidden_field_tag 'userid', session[:userid]%>
-  	 	<%=hidden_field_tag 'related_num', session[:related_num]%>
-		<%=hidden_field_tag 'description', session[:description]%>
-		<%=hidden_field_tag 'allow_currency', session[:allow_currency]%>
-		<%=hidden_field_tag 'allow_payment', session[:allow_payment]%>
-		<%=hidden_field_tag 'pmnt_type', session[:pmnt_type]%>
-		<%=hidden_field_tag 'order_type', session[:order_type]%>
-		<%=hidden_field_tag 'origin_currency', session[:origin_currency]%>
-		<%=hidden_field_tag 'amount', session[:amount]%>
-		<%=hidden_field_tag 'currency', session[:currency]%>
-		<%=hidden_field_tag 'cur2rmb_rate', session[:cur2rmb_rate]%>
-		<%=hidden_field_tag 'amount_cny', session[:amount_cny]%>
-		<%=hidden_field_tag 'amount_eur', session[:amount_eur]%>
-		<%=hidden_field_tag 'country', session[:country]%>
-			<div class="col-style-1">
-			  <div class="widget-2">
-			    <div id="pay-info" class="col-xs-12 table-responsive">
-					  <table class="table">
-					    <thead>
-						  <tr>
-						    <td colspan="3"><strong>支付方式选择</strong></td>
-						  </tr>
-						</thead>
-					    <tbody>
 
-					    <% if @credit_use == "Y"%>
-							  <tr>
-									<td >
-					        <div class="radio-botton-block">
-					        <%= radio_button "checkout_way","","credit" ,style:"float: left; position: relative; left: 20%; top: 6px;", onchange: 'payclick(this);', id: "credit_use"%>
-							<button type="button" class="radio-button form-control"  onclick="payclick(this);" id="credit_use">积分支付</button>
-							
-						</div>
-									</td>
-									<td colspan="2">
-										<span class="light-font">您的当前积分是：<span style="color:#2B8A4F"><%=@wui.user_credit%></span></span>
-										<p><span class="light-font">您可以选择积分抵扣的方式进行支付。</span></p>
-									</td>
-							  </tr>
-						  <% end %>
-						  
-						  	<% if @wechatpay == "Y" %>
-							  <tr>
-									<td >
-					  <div class="radio-botton-block">
-					  		<%= radio_button "checkout_way","","wechatpay" ,style:"float: left; position: relative; left: 20%; top: 6px;", onchange: 'payclick(this);', id: "wechatpay" %>
-							<button type="button" class="radio-button form-control" style="background-image: url('/assets/mypost4u/wechat.png');  background-size: 70% 150%; background-repeat: no-repeat;background-position: 60% 40%;" onclick="payclick(this);" id="wechatpay"></button>
-							
-						</div>
-									</td>
-									<td colspan="2" style="vertical-align: middle;">
-									<span class="light-font"><span style="color:#2B8A4F">微信支付</span>
-									    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: red">推荐该支付方式，使用该支付方式每个非小包奶粉专线包裹即时返还0.5欧元（33.33个）积分</span>
-									</span>
-									<p><span class="light-font">请填写下方支付人信息</span></p>
-									</td>
-							  </tr>
-						  <% end %>
-						  	
-						  
-							<tr  id="oceanpayinfo"  style="display: none">
-								<td>
-								<div class="form-item" class="slide-panel">
-				          	<span class="item-text">＊姓名：</span><%= text_field_tag('consumer_name',  @aa.present? ? @aa.name : "", class:"form-control") %>
-				          	</div>
-				          	</td>
-				          	<td>
-				          	<div class="form-item" class="slide-panel">
-				          	<span class="item-text">＊电话：</span><%= text_field_tag('consumer_phone', @aa.present? ? @aa.telephone : "", class:"form-control") %>
-				          	</div>
-				          	</td>
-				          	<td>
-				          	<div class="form-item" class="slide-panel">
-				          	<span class="item-text">＊身份证号：</span><%= text_field_tag('consumer_id', @aa.present? ? @aa.id_number : "", class:"form-control") %>
-				          	</div>
-				          	</td>
-				          </tr>
-						  <tr><td></td><td></td><td></td></tr>
-					    </tbody>
-					  </table>
-					</div>
-				
-				
-			  </div>
-			  <div class="clearfix"></div>
-	    </div>
-			<div class="text-center">
-		   
-		   <button type="submit" class="btn btn-success btn-block" data-disable-with="请稍等" id="pm-submit">提交</button>
-		<% end %>
-					  
-		 
-		<div class="clearfix"></div>
-	</div>
-	<div class="clearfix"></div>
-	</div>
+    <div id="pay_panel">
+      <input value="<%=@appid%>" id="appid" hidden>
+      <input value="<%=@openid%>" id="openid" hidden>
+      <input  id="pre_id" hidden>
+      <div id="price_box">
+        <p class="box-item-title">付款金额</p>
+        <%if session[:pay_type]=="milkvip"%>
+          <p class="box-item-content"><%=currency_abbr("CNY")%> <span class="show_amount"><%=session[:amount_cny]%></span></p>
+        <%else%>
+          <p class="box-item-content"><%=currency_abbr("EUR")%> <span class="show_amount"><%=session[:amount]%></span></p>
+        <%end%>
+      </div>
+      <%= form_tag(wechat.parcel_payment_credit_pay_path, :method => "post",:class=>"myform",:name=> "pm-form") do %>
+        <%=hidden_field_tag 'userid', session[:userid]%>
+        <%=hidden_field_tag 'related_num', session[:related_num]%>
+        <%=hidden_field_tag 'description', session[:description]%>
+        <%=hidden_field_tag 'allow_currency', session[:allow_currency]%>
+        <%=hidden_field_tag 'allow_payment', session[:allow_payment]%>
+        <%=hidden_field_tag 'pmnt_type', session[:pmnt_type]%>
+        <%=hidden_field_tag 'order_type', session[:order_type]%>
+        <%=hidden_field_tag 'origin_currency', session[:origin_currency]%>
+        <%=hidden_field_tag 'amount', session[:amount]%>
+        <%=hidden_field_tag 'currency', session[:currency]%>
+        <%=hidden_field_tag 'cur2rmb_rate', session[:cur2rmb_rate]%>
+        <%=hidden_field_tag 'amount_cny', session[:amount_cny]%>
+        <%=hidden_field_tag 'amount_eur', session[:amount_eur]%>
+        <%=hidden_field_tag 'country', session[:country]%>
+        <%=hidden_field_tag 'origin_amount', session[:origin_amount]%>
+        <%=hidden_field_tag 'coupon_id'%>
+        <%=hidden_field_tag 'coupon_amount'%>
+        <div class="div_white">
+              
+            <%if @vouchers.present?%>
+            <div id="title" style="border-bottom:1px solid #eee">
+                <span class="font_14">商家折扣券</span>
+                <a href="javascript:;">
+                  <span id="v_count" class="bar-item-title font_14 red" style="float:right;position: relative; right: 5%; "><%=@vouchers.count%>张可用<img src="/assets/wechat/sanjiaoxia.png"></span>
+                  </a>
+            <%else%>
+            <div id="title" style="border-bottom:1px solid #eee">
+                <span class="font_14">商家折扣券</span>
+                  <span class="font_14" style="float:right;position: relative; right: 5%;color: #ccc ">暂无可用</span>
+                <%end%>  
+              </div>
+              <div id="v_detail" style="display:none">
+              <%if @vouchers.present?%>
+              <%@vouchers.each do |v|%>
+                <div class="bar" style="overflow-x: hidden;">
+                      <div class="bar-item col-1 pull-left">
+                          <p>&nbsp;</p>
+                      </div>
+                      <div class="bar-item col-9 pull-left">          
+                          <p class="bar-item-title block red">&nbsp;&nbsp;代金券&nbsp;&nbsp;<span class="c_cury"><%=v.currency.present? ? currency_abbr(v.currency) : ""%></span><span class="c_amt"><%=v.amount%></span></p>
+                      </div>
+                      <div class="bar-item col-2 pull-left">          
+                          <div>
+                          <%= radio_button_tag "coupon_way",v.id,false ,style:"float: right; position: relative; right: 20%; ",class: 'coupon', id: "coupon_#{v.id}"%>
+                          </div>
+                      </div>
+                </div>
+              <%end%>
+              <div class="bar" style="overflow-x: hidden;">
+                      <div class="bar-item col-1 pull-left">
+                          <p>&nbsp;</p>
+                      </div>
+                      <div class="bar-item col-9 pull-left">          
+                          <p class="bar-item-title block" style="color: #ccc">&nbsp;&nbsp;取消使用</span></p>
+                      </div>
+                      <div class="bar-item col-2 pull-left">          
+                          <div>
+                          <%= radio_button_tag "coupon_way","0",false ,style:"float: right; position: relative; right: 20%; ",class: 'coupon', id: "coupon_none"%>
+                          </div>
+                      </div>
+                </div>
+              <%end%>
+              </div>
+      </div>
+        
+          <div class="div_white">
+              <div id="title"><p class="font_14">选择支付方式</p></div>
+               <% if @credit_use == "Y"%>
+                  <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;">
+                        <div class="bar-item col-1 pull-left">          
+                            <img src="/assets/wechat/jifenzhifu.gif">
+                        </div>
+                        <div class="bar-item col-9 pull-left"  style="padding-left:10px">          
+                            <p class="bar-item-title block hard">积分支付</p>
+                            <p class="bar-item-title block font_14">当前积分<%=@wui.user_credit%>,需抵扣积分<span id="credit" class="bar-item-title red"><%=@needed_credit%></span></p>
+                        </div>
+                        <div class="bar-item col-2 pull-left">          
+                            <div class="radio-botton-block">
+                              <%= radio_button "checkout_way","","credit" ,style:"float: right; position: relative; right: 20%;", id: "credit_use",checked:true%>
+                              </div>
+                        </div>
+                  </div>
+              <%else%>
+                   <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;">
+                    <div class="bar-item col-1 pull-left">          
+                        <img src="/assets/wechat/jifenzhifu.gif">
+                    </div>
+                    <div class="bar-item col-9 pull-left" style="padding-left:10px">          
+                        <p class="bar-item-title  hard">积分支付</p>
+                        <p class="bar-item-title  font_14">当前积分<span id="origin_credit"><%=@wui.user_credit%></span>,需抵扣积分<span id="credit" class="bar-item-title red"><%=@needed_credit%></span></p>
+                    </div>
+                    <div class="bar-item col-2 pull-left">          
+                        <div class="radio-botton-block">
+                          <%= radio_button "checkout_way","","credit" ,style:"float: right; position: relative; right: 20%;", id: "credit_use",disabled:true%>
+                          </div>
+                    </div>
+              </div>
+              <% end %>
+              <%if @wechatpay=="Y"%>
+              <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;">
+                    <div class="bar-item col-1 pull-left">          
+                        <img src="/assets/wechat/weixinzhifu.png">
+                    </div>
+                    <div class="bar-item col-9 pull-left"  style="padding-left:10px">          
+                        <p class="bar-item-title block hard">微信支付</p>
+                        <%if session[:pay_type]!="milkvip"%>
+                          <p class="bar-item-title  font_14">当前汇率<span>1EUR = <%=session[:cur2rmb_rate]%>CNY</span>,换算成人民币<span id="rmb" class="bar-item-title red"><%=session[:amount_cny]%></span></p>
+                        <%end%>
+                    </div>
+                    
+                    <div class="bar-item col-2 pull-left">          
+                        <div class="radio-botton-block">
+                        <%if @credit_use == 'N'%>
+                          <%= radio_button "checkout_way","","wechatpay" ,style:"float: right; position: relative; right: 20%; ", id: "wechatpay",checked:true%>
+                          </div>
+                        <%else%>
+                          <%= radio_button "checkout_way","","wechatpay" ,style:"float: right; position: relative; right: 20%; ", id: "wechatpay"%>
+                          </div>
+                        <%end%>
+                    </div>
+             </div>
+             <%else%>
+                   <div class="bar" style="padding-bottom: 25px;overflow-x: hidden;">
+                   <div class="bar-item col-1 pull-left">          
+                        <img src="/assets/wechat/weixinzhifu.png">
+                    </div>
+                    <div class="bar-item col-9 pull-left"  style="padding-left:10px">          
+                        <p class="bar-item-title block hard">微信支付</p>
+                        <%if session[:pay_type]!="milkvip"%>
+                          <p class="bar-item-title  font_14">当前汇率<span>1EUR = <%=session[:cur2rmb_rate]%>CNY</span>,换算成人民币<span id="rmb" class="bar-item-title red"><%=session[:amount_cny]%></span></p>
+                        <%end%>
+                    </div>
+                    
+                    <div class="bar-item col-2 pull-left">          
+                        <div class="radio-botton-block">
+                          <%= radio_button "checkout_way","","wechatpay" ,style:"float: right; position: relative; right: 20%; ", id: "wechatpay",disabled:true%>
+                          </div>
+                    </div>
+             </div>
+             <%end%>
+          </div>
+        </div>
+        <div class="scroll-attachment double"></div>
 
+        <div class="footer bg-pure">
+            <button class="btn btn-success btn-block" id="pm-submit" type="button">支付</button>
+            
+              <%if session[:shpmt_product]=="阳光包税专线" && session[:pay_type]!="milkvip"%>
+                <%=link_to parcel_ygbs_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="NFZX" %>
+                <%=link_to parcel_nfzx_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="DHL" %>
+                <%=link_to parcel_dhl_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="DHL经济包" %>
+                <%=link_to parcel_dhl_ec_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="CZ-EMS" %>
+                <%=link_to parcel_cz_ems_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="小包奶粉专线"%>
+                  <%=link_to parcel_cc_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="E特快" %>
+                  <%=link_to parcel_etk_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="小包食品保健品专线"%>
+                <%=link_to parcel_bjcc_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%elsif session[:shpmt_product]=="retour"%>
+                <%=link_to returning_parcel_new_path do %><button type="button" class="btn btn-default btn-block">继续下单</button><%end%>
+              <%else%>
+                <%=link_to :back do %><button type="button" class="btn btn-default btn-block">返回</button><%end%>
+              <%end%>
+        </div>
+     <% end %>
+    
 
-	<script>
-            // $(function(){
-            // 	$("#consumer_name").validate( { test:[{case:"nonzero",message:"不能为空"}] });
-            // 	$("#consumer_phone").validate( { test:[{case:"nonzero",message:"不能为空"}] });
-            // 	$("#consumer_id").validate( { test:[{case:"nonzero",message:"不能为空"}] });
-            // 		 $("#pm-submit").click(function(){
-            //                         event.preventDefault();
-            //                         $(".form-control").validate("test");
-            //                         if($(".alert-panel").length===0){
-            //                           $("form[name='pm-form']").submit();
-            //                         }
-            //              })
-            // })
-            </script>
-            </body>
+  <script>
+  $(function(){
+    $("#v_count").click(function(){
+        var d=$("#v_detail").attr('style');
+        if(d=="display:none"){
+          $("#v_detail").attr('style','display:block');
+          $(this).children("img").attr('src','/assets/wechat/sanjiao.png');
+        }else{
+          $("#v_detail").attr('style','display:none');
+          $(this).children("img").attr('src','/assets/wechat/sanjiaoxia.png');
+        }
+      })
+    $(".coupon").on("click", function () {
+      var val=$(this).val();
+      if(val=="0"){
+        var total_amount_eur=$("#origin_amount").val();
+        var cur2rmb_rate=$("#cur2rmb_rate").val();
+        cancel_coupon(total_amount_eur,cur2rmb_rate);
+        
+      }else{
+        var total_amount_eur=$("#origin_amount").val();
+        var cur2rmb_rate=$("#cur2rmb_rate").val();
+        var c_amt=$(this).parent().parent().prev().children().children(".c_amt").html();
+        var c_id=$(this).prop("id").split("_")[1];
+        use_coupon(total_amount_eur,c_amt,cur2rmb_rate,c_id);
+      }
+      
+    })
+    function use_coupon(total_amount_eur,c_amount_eur,cur2rmb_rate,c_id){
+        var c_id=c_id;
+        var total_amount_eur=parseFloat(total_amount_eur);
+        var c_amount=parseFloat(amount);
+        var cur2rmb_rate=parseFloat(cur2rmb_rate);
+        $.ajax({
+            url:"/wechat/parcel_payment/coupon_exchange",
+            method:"post",
+            data:{total_amount_eur:total_amount_eur,c_amount_eur:c_amount_eur,cur2rmb_rate:cur2rmb_rate,c_id:c_id},
+            success: function(data) {
+              d=eval(data);
+              if(d.status=="success"){               
+                $(".show_amount").html(d.amount_eur);
+                $("#rmb").html(d.amount_cny);
+                $("#amount_cny").val(d.amount_cny);
+                $("#amount").val(d.amount_eur);
+                $("#amount_eur").val(d.amount_eur);
+                $("#credit").html(d.credit);
+                $("#coupon_id").val(d.c_id);
+                $("#coupon_amount").val(d.c_amount);
+                if(d.amount_cny==0){
+                  $("#wechatpay").attr("disabled",true);
+                }
+                if(parseFloat($("#origin_credit").html())>=parseFloat($("#credit").html())){
+                  $("#credit_use").attr("disabled",false);
+                }
+              }else{
+                var reason=d.reason;
+                alert(reason)
+              }
+            }
+          })
+    }
+    function cancel_coupon(total_amount_eur,cur2rmb_rate){
+        var total_amount_eur=parseFloat(total_amount_eur);
+        var cur2rmb_rate=parseFloat(cur2rmb_rate);
+        $.ajax({
+            url:"/wechat/parcel_payment/coupon_restore",
+            method:"post",
+            data:{total_amount_eur:total_amount_eur,cur2rmb_rate:cur2rmb_rate},
+            success: function(data) {
+              d=eval(data);
+              if(d.status=="success"){               
+                $(".show_amount").html(d.amount_eur);
+                $("#rmb").html(d.amount_cny);
+                $("#amount_cny").val(d.amount_cny);
+                $("#amount").val(d.amount_eur);
+                $("#amount_eur").val(d.amount_eur);
+                $("#credit").html(d.credit);
+                $("#coupon_id").val("");
+                $("#coupon_amount").val("");
+                if(d.amount_cny==0){
+                  $("#wechatpay").attr("disabled",true);
+                }
+                if(parseFloat($("#origin_credit").html())<parseFloat($("#credit").html())){
+                  $("#credit_use").attr("disabled",true);
+                }
+              }else{
+                var reason=d.reason;
+                alert(reason)
+              }
+            }
+          })
+    }
+    $("#pm-submit").click(function(){
+          $("#pm-submit").attr('disabled',true);
+          if($("input[name='checkout_way[]']:checked").val()=="credit"){
+              $("form[name='pm-form']").submit();
+          }else{
+
+            var userid=$("#userid").val();
+            var amount=$("#amount").val();
+            var related_num=$("#related_num").val();
+            var currency=$("#currency").val();
+            var cur2rmb_rate=$("#cur2rmb_rate").val();
+            var amount_cny=$("#amount_cny").val();
+            var amount_eur=$("#amount_eur").val();
+            var description=$("#description").val();
+            var country=$("#country").val();
+            var allow_currency=$("#allow_currency").val();
+            var allow_payment=$("#allow_payment").val();
+            var origin_currency=$("#origin_currency").val();
+            var pmnt_type=$("#pmnt_type").val();
+            var order_type=$("#order_type").val();
+            var coupon_id=$("#coupon_id").val();
+            var coupon_amount=$("#coupon_amount").val();
+            var url="/wechat/parcel_payment/pre_wxpay"
+            $.ajax({
+                  url:url,
+                  method:"post",
+                  data:{userid:userid,amount:amount,related_num:related_num,currency:currency,cur2rmb_rate:cur2rmb_rate,amount_cny:amount_cny,amount_eur:amount_eur,description:description,country:country,allow_currency:allow_currency,allow_payment:allow_payment,origin_currency:origin_currency,pmnt_type:pmnt_type,order_type:order_type,coupon_id:coupon_id,coupon_amount:coupon_amount},
+                  success:function(data){
+                      var d=eval(data);
+                      if(d.status=="success"){
+                                      $("#pre_id").val(d.prepay_id);
+                                      $("#pm-submit").attr('disabled',false);
+                                      onBridgeReady(d.prepay_id);
+                      }else{
+                        var msg=d.msg;
+                        if($("#pmnt_type").val()=="milkvip"){
+                          window.location.href="/wechat/milkvip/apply_platinum?notify="+msg
+                        }else{
+                          window.location.href="/wechat/parcel/wait_pay?notify="+msg
+                        }
+                        
+                      }
+                  }
+            })
+         }
+    })
+  })
+  </script>
+</body>
     
 </html>
