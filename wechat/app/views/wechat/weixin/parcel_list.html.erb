@@ -8,113 +8,234 @@
         <!--css-->
         
          <%= stylesheet_link_tag    'bootstrap.min'%>
-          <%= stylesheet_link_tag    'wechat/style'%>
-        <%= stylesheet_link_tag    'wechat/parcel'%>
-         
+        <%= stylesheet_link_tag    'wechat/style'%>
+        <%= stylesheet_link_tag    'wechat/framework'%>
+         <%= stylesheet_link_tag    'wechat/parcel1'%>
         <!--js-->
         <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
         <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'validate.jquery', 'data-turbolinks-track' => true %>
+        <%= javascript_include_tag 'wechat/mobile_adapter', 'data-turbolinks-track' => true %>
     </head>
 
     <body onload="myfun('<%="#{session[:time]}"%>')">
-           <div id="parcel_list">
-            
-                <%if flash[:notice].present?%>
-                    <div id="error_explanation" class="alert alert-info">
+             <div class="header bg-pure">
+            <div class="col-2 pull-left">
+                <img class="full-img" src="/assets/wechat/new_version/icon.png">
+            </div>
+            <div class="col-6 pull-left" style="padding-top:0.2rem;">
+                <p class="pull-left col-12 header-title-pay">包裹列表</p>
+                <p class="pull-left col-12 header-sub-title">请在此页面查看所有包裹</p>
+            </div>
+            <div class="col-3 pull-left text-left top-gap-1">
+              <%=link_to "合并支付",wechat.parcel_wait_pay_path, class:"btn btn-primary btn-sm",style:"background-color:#69BFD3;border-color:#69BFD3"%>
+            </div>
+            <div class="col-1 pull-left text-right" style="padding-top:0.2rem;" >
+              <%=link_to wechat.weixin_home_path do%>
+                    <p class="pull-left col-12 header-title-return">返回</p>
+                <%end%>
+            </div>
+          </div>
+          <%if flash[:notice].present?%>
+                    <div id="error_explanation" class="alert alert-info" style="margin-bottom:0px">
                         <%=flash[:notice]%>
                     </div>
                 <%end%>
-                <div id="error_explanation" class="alert alert-danger" style="display:none"></div>
-                <%= form_tag(weixin_parcel_list_path, :method => "get",:class=>"myform") do %>
-                <div class="form_search">
-                       <img src="/assets/wechat/zhanghao.png">
-                       <span >请选择要查询的帐号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
-                      <%= select_tag('user_id', options_for_select(@user_hash,params['user_id']), class:"select_search", style:"display:inline-block;  background-color:#fff;") %>
-
-                      <input type="submit" value="查询" class="btn" />
-                 </div>
-                 <%end%>
-                 <%= form_tag(weixin_parcel_list_path, :method => "get",:class=>"myform") do %>
-                 <div class="form_search">
-                      <img src="/assets/wechat/sousuo.png">
-                      <span>请输入要查询的收件人:</span>
-                      <%= text_field_tag('recipient', params[:recipient], class:"form-control",style:"display:inline-block; border:0px;") %>    
-                    
-                      <input type="submit" value="查询" class="btn" />
-                </div>
-                <%end%>
-                <div class="clearfix"></div>
+          <div id="error_explanation" class="alert alert-danger" style="display:none"></div>
+          <div class="clearfix bg-pure top-gap-1">
+              <%if @users_all.count>1&&@users_all.where(role:"admin").count>0%>
+                    <%= form_tag(weixin_parcel_list_path, :method => "get",:class=>"myform") do %>
+                      <div class="bar" style="height:71px;padding-bottom: 19px;overflow-x: hidden;">
+                        <div class="bar-item col-10 pull-left">          
+                            <span class="bar-item-title hard">
+                                    <div id="new_box">
+                                          <img src="/assets/wechat/sousuo.png">
+                                           
+                                          <%= select_tag('user_id', options_for_select(@user_hash,params['user_id']), class:"select_search") %>
+                                  </div>
+                            </span>
+                        </div>
+                        <div class="bar-item col-2 pull-right">          
+                            <span class="bar-item-title"><input type="submit" value="查询" class="btn_green" /></span>
+                        </div>
+                    </div>
+                  <%end%>
+            <%end%>
+            <%= form_tag(weixin_parcel_list_path, :method => "get",:class=>"myform") do %>
+                    <div class="bar" style="height:71px;padding-bottom: 19px;overflow-y: hidden;">
+                      <div class="bar-item col-10 pull-left">          
+                          <span class="bar-item-title hard">
+                                  <div id="new_box">
+                                        <img src="/assets/wechat/sousuo.png">
+                                        <%= text_field_tag('recipient', params[:recipient], placeholder: "请输入要查询的收件人",class:"inline_text") %> 
+                                </div>
+                          </span>
+                      </div>
+                      <div class="bar-item col-2 pull-right">          
+                          <span class="bar-item-title"><input type="submit" value="查询" class="btn_green" /></span>
+                      </div>
+                    </div>
+            <%end%>
+          </div>
+          
+           <div id="parcel_list">
                 <%if @parcelInfo.present? %>
                    
                     <%@parcelInfo.each do |p|%>
                         <table class="table">
                                 <tbody>
                                     <tr>
-                                        <td class="first">运单号</td>
-                                        <td ><%=p["ishpmt_num"] || "暂无运单号"%></td>
-                                       
-                                            <td rowspan="2" >
-                                                        <%if p["pd_pmnt_status"]=="paid"||p["pd_pmnt_status"]=="abnormally-paid"%>
-                                                          <input type="submit" value="<%=@parcel_array.include?(p["parcel_num"]) ? "取关" : "关注"%>" id="<%=p["parcel_num"]%>" class="btn_follow" onclick="follow('<%="#{session[:server]}"%>','<%=p["parcel_owner"]%>','<%=p["parcel_num"]%>') "/>
-                                                          <%elsif Weixin::TEST_EMAIL.include?session[:openid]%>
-                                                          <span style="color:red"> <%=link_to "去支付",wechat.parcel_payment_new_path(parcel_num: p["parcel_num"])  %></span>
-                                                          <%else%>
-                                                          <span style="color:red"><%=pmnt_status_desc(p["pd_pmnt_status"])%></span>
-                                                          <%end%>
-                                                         
-                                            </td> 
+                                        <td class="first" colspan="3">国际物流号&nbsp;&nbsp;<span style="color:#1C1A2A;font-weight:bolder;"><%=p["ishpmt_num"] || "暂无"%></span></td>
+                                        <td rowspan="2">
+                                        
+                                        <%if p["pd_pmnt_status"]=="unpaid"&&p["parcel_status"]!="wait_id_img"%>
+                                          <%=link_to wechat.parcel_payment_new_path(parcel_num: p["parcel_num"]) do  %>
+                                                  <input type="button" value="去支付" class="btn_pay" style="float:right" >
+                                          <%end%>
+                                        <%elsif p["parcel_status"]=="wait_id_img"&&p["recipient"]["idNumber"].present?%>
+                                          <%=link_to wechat.id_info_show_path(id_num: p["recipient"]["idNumber"],telephone:p["recipient"]["telephone"]) do  %>
+                                                  <input type="button" value="身份证入口" class="btn_pay" style="float:right;width:80px" >
+                                          <%end%>
+                                        <%elsif p["can_cancel"]==true%>
+                                                  <%=link_to wechat.parcel_cancel_path(parcel_num: p["parcel_num"],payment:p["payment"]) do %>
+                                                      <input type="button" value="取消" class="btn_pay" style="float:right" >
+                                                  <%end%>
+                                        <%else%>
+                                          <span style="color:red;float:right"><%=pmnt_status_desc(p["pd_pmnt_status"])%></span>
+                                        </td>
+                                        <%end%>
+                                        <%if Weixin::EXISTED_DELIVERY.include?(p["shpmt_product"]) &&p["can_edit"]==true%>
+                                                  <%=link_to wechat.parcel_edit_path(parcel_num: p["parcel_num"]) do %>
+                                                      <input type="button" value="修改" class="btn_pay" style="float:right" >
+                                                  <%end%>
+                                        <%end%>
                                      </tr>
                                      <tr>
-                                            <td class="first">包裹单号</td>
-                                            <td><%=p["parcel_num"] %></td>
-
+                                            <td class="first" colspan="4">包裹编号&nbsp;&nbsp;<span style="color:#1C1A2A;font-weight:bolder;"><%=p["parcel_num"] %></span></td>
+                                            
                                      </tr>
                                      <tr>
-                                            <td class="first">收件人</td>
-                                            <td colspan="2">
-                                                <%=p["recipient"]['name_combine']%>
+                                            <td class="first" colspan="4">产品&nbsp;&nbsp;
+                                              <span style="color:#1C1A2A;font-weight:bolder;">
+                                                  <% if p["shpmt_product"]  == "DHL" %>
+                                                      DHL优先包
+                                                  <% elsif p["shpmt_product"]  == "阳光包税专线"%>
+                                                      杂货包税专线
+                                                  <% else %>
+                                                     <%=p["shpmt_product"] %> 
+                                                  <% end %>         
+                                              </span>
                                             </td>
                                      </tr>
                                      <tr>
-                                            <td class="first">包裹状态</td>
+                                            <td class="first" colspan="3">收件人&nbsp;&nbsp;<span style="color:#1C1A2A;font-weight:bolder;"><%=p["recipient"]['name_combine']%></span>
+                                            </td>
+                                     </tr>
+                                     <tr>
+                                            <td class="first" colspan="3">价格&nbsp;&nbsp;<span style="color:#1C1A2A;font-weight:bolder;"><%=currency_abbr(p["currency"])%><%= p["price"] %></span>
+                                            </td>
+                                     </tr>
+                                     <tr>
+                                            <td class="first"  colspan="3">包裹状态&nbsp;&nbsp;
                                             <%if max_in_status(p["parcel_status"],p["pd_shpmt_status"])=="blocked"||max_in_status(p["parcel_status"],p["pd_shpmt_status"])=="pdf_failure"||max_in_status(p["parcel_status"],p["pd_shpmt_status"])=="cancelled"||max_in_status(p["parcel_status"],p["pd_shpmt_status"])=="closed"%>
-                                            <td colspan="2" style="color: #DA4453">
+                                            <span style="color: #DA4453">
                                           <%else%>
-                                            <td colspan="2" style="color: #7DB043">
+                                            <span style="color: #7DB043">
                                           <%end%>
                                                
                                                  <%= max_in_status_desc(max_in_status(p["parcel_status"],p["pd_shpmt_status"]))%>
-                                          
+                                            </span>
                                             </td> 
+                                            <td></td>
                                      </tr>
                                      <tr>
-                                            <td class="first">最新物流</td>
-                                            <td colspan="2">
+                                            <td class="first" colspan="4">
                                             <%=link_to tracking_info_fba_path(id: p["parcel_num"]),:class=>"link" do%>
                                             <%=tracking_info_analysis(nil,p["pti"])[0].to_s.split(" ")[0]%>&nbsp; 
                                             <%=tracking_info_analysis(nil,p["pti"])[0].to_s.split(" ")[1]%>&nbsp;
                                             <%=tracking_info_analysis(nil,p["pti"])[1]%>
-                                             </span>
-                                        <%end%> 
+                                             
+                                            <%end%> 
                                             </td>
+                                     </tr>
+                                     <tr>
+                                          <td colspan="4" class="opr">
+                                          
+                                          <%if @parcel_array.include?(p["parcel_num"])%>
+                                            <img src="/assets/wechat/Star.png" id="<%=p["parcel_num"]%>_<%=p["parcel_owner"]%>" class="follow">&nbsp;&nbsp;<span class="font_15">关注</span>
+                                          <%else%>
+                                            <img src="/assets/wechat/Star_gray.png" id="<%=p["parcel_num"]%>_<%=p["parcel_owner"]%>" class="follow">&nbsp;&nbsp;<span class="font_15">未关注</span>
+                                            <%end%>
+
+                                            <%if p["pd_pmnt_status"]=="paid"||p["pd_pmnt_status"]=="abnormally-paid"%>
+                                                  <%if p["have_posting_file"]==true%>
+                                                        <%=link_to wechat.parcel_posting_file_path(parcel_num: p["parcel_num"]) do  %>
+                                                       <img src="/assets/wechat/xiazai.png" id="<%=p["parcel_num"]%>" class="download">&nbsp;&nbsp;<span class="font_15">下载包裹单</span>
+                                                       <%end%>
+                                                              
+                                                  <%end%>
+                                                          
+                                            <%end%>
+                                          </td>
                                      </tr>
                                   </tbody>
                          </table>
                     
                    <%end %>
 
-                <%else%>
-                <div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:40px">未找到相关包裹</div>
-                <%end%>
+                
+        <!-- 分页 -->        
+        <div id="nav">  
+            <input type="hidden" name="page" value=<%= @page%>>  
+            <nav style="text-align: center">  
+              <ul class="pagination">  
+                <% if @page.to_i == 1%>  
+                   <li class="disabled"><a style="padding:4px 6px">首页</a></li>  
+                    <li class="disabled"><a style="padding:4px 6px">上一页</a></li>  
+                <% else %> 
+                    <%if params['user_id'].present?&&params['recipient'].present?%>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?user_id=' + params['user_id'] + '&recipient=' + params['recipient'] + '&page=1'%> >首页</a></li>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?user_id=' + params['user_id'] + '&recipient=' + params['recipient'] + '&page='+(@page.to_i - 1).to_s %>>上一页</a></li> 
+                    <%elsif params['user_id'].present?%> 
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?user_id=' + params['user_id'] + '&recipient=' + '&page=1'%> >首页</a></li>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?user_id=' + params['user_id'] + '&recipient='+ '&page='+(@page.to_i - 1).to_s %>>上一页</a></li> 
+                    <%elsif params['recipient'].present?%> 
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?user_id=' + '&recipient=' + params['recipient'] + '&page=1'%> >首页</a></li>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?user_id=' + '&recipient=' + params['recipient'] + '&page='+(@page.to_i - 1).to_s %>>上一页</a></li> 
+                    <%else%>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?page=1'%> >首页</a></li>
+                             <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?page='+(@page.to_i - 1).to_s %>>上一页</a></li> 
+                    <%end%> 
                     
-            
-            <ul class="pagination">
-         <%= form_tag(weixin_parcel_list_path, :method => "get",:class=>"myform") do %>
-                             <%= hidden_field_tag "user_id", params['user_id']%>
-                             <%= hidden_field_tag "recipient", params['recipient']%>
-                                共<%=@total_pages%>页/跳转到第<%= text_field_tag('page', params[:page], class:"form-control",style:"display:inline-block; border:0px;width:50px") %> 页&nbsp; <input type="submit" value="确定" class="btn" />
+                <% end %>  
+                <li class="disabled"><a style="padding:4px 6px" >当前为第<%= @page %>页 共<%= @total_pages %>页</a></li>  
+                <% if @page.to_i == @total_pages%>  
+                    <li class="disabled"><a style="padding:4px 6px">下一页</a></li>  
+                    <li class="disabled"><a style="padding:4px 6px">末页</a></li>  
+                <% else %>  
+                     
+                    <%if params['user_id'].present?&&params['recipient'].present?%>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?user_id=' + params['user_id'] + '&recipient=' + params['recipient'] + '&page=' + (@page.to_i + 1).to_s %> >下一页</a></li>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?user_id=' + params['user_id'] + '&recipient=' + params['recipient'] + '&page=' + @total_pages.to_s  %>>末页</a></li> 
+                    <%elsif params['user_id'].present?%> 
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?user_id=' + params['user_id'] + '&recipient=' + '&page=' + (@page.to_i + 1).to_s %> >下一页</a></li>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?user_id=' + params['user_id'] + '&recipient='+ '&page=' + @total_pages.to_s  %>>末页</a></li> 
+                    <%elsif params['recipient'].present?%> 
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?user_id=' + '&recipient=' + params['recipient'] + '&page=' + (@page.to_i + 1).to_s %> >下一页</a></li>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?user_id=' + '&recipient=' + params['recipient'] + '&page=' + @total_pages.to_s  %>>末页</a></li> 
+                    <%else%>
+                            <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path  + '?page=' + (@page.to_i + 1).to_s %> >下一页</a></li>
+                             <li><a style="padding:4px 6px" href=<%=  weixin_parcel_list_path + '?page=' + @total_pages.to_s  %>>末页</a></li> 
+                    <%end%> 
+                <% end %>  
+              </ul>  
+            </nav>  
+          </div>  
+
+          <%else%>
+            <div class="filter_actions h4 well col-xs-offset-2 col-xs-8 text-center text-info" style="margin-top:40px">未找到相关包裹</div>
           <%end%>
-       </ul>
+       
           </div>
     </body>
     <script>
@@ -122,48 +243,51 @@
                 {
                     var ck=cookie;
                     if(ck==="true"){
-                        alert("         进入包裹列表，您可以选择对包裹进行关注，以便系统为您及时推送该包裹的物流信息；点击取关，系统将停止推送。");
+                        alert("         进入包裹列表，您可以选择对包裹进行关注，以便系统为您及时推送该包裹的物流信息。");
                  }
                 }
-              
-              function follow(server_type,user_id,parcel_num){
-                                var ele=$("#"+parcel_num);
-                                var server=server_type
-                                var parcel_owner=user_id
-                                var parcel_num=parcel_num
-                                
-                               if (ele.val()==="关注")
-                                $.ajax({
+              $(".follow").click(function () {
+                     var ele=$(this).prop('id');
+                     var parcel_owner=ele.split("_")[1];
+                     var parcel_num=ele.split("_")[0];
+                     var server="overseas";
+                     var content=$(this).next('span').html();
+                     if(content=="未关注"){
+                          $.ajax({
                                   url:"/wechat/weixin/parcel_follow",
                                   method:"post",
                                   data:{server: server, parcel_owner: parcel_owner, parcel_num: parcel_num},
                                   success: function(data) {
                                     var d=eval(data);
                                     if(d.status=='success'){
-                                                    ele.val("取关");
+                                                    //ele.val("关注");
+                                                    $("#"+parcel_num+"_"+parcel_owner).next('span').html("关注");
+                                                    $("#"+parcel_num+"_"+parcel_owner).attr('src','/assets/wechat/Star.png');
                                             }
                                     else{
-                                        $(".alert-danger").html(data.reason);
+                                        $(".alert-danger").html(d.reason);
                                     }
                                     }
-                                });
-                            else{
-                                $.ajax({
+                         });
+                     }else{
+                        $.ajax({
                                   url:"/wechat/weixin/parcel_follow_cancel",
                                   method:"post",
                                   data:{server: server, parcel_owner: parcel_owner, parcel_num: parcel_num},
                                   success: function(data) {
                                     var d=eval(data);
                                     if(d.status=='success'){
-                                                    ele.val("关注");
+                                                   // ele.val("取关");
+                                                   $("#"+parcel_num+"_"+parcel_owner).next('span').html("未关注");
+                                                    $("#"+parcel_num+"_"+parcel_owner).attr('src','/assets/wechat/Star_gray.png');
                                             }
                                     else{
-                                        $(".alert-danger").html(data.reason);
+                                        $(".alert-danger").html(d.reason);
                                     }
                                     }
                                 });
-                            }
-                            
-              }
+                     }
+              })
+              
     </script>
 </html>
