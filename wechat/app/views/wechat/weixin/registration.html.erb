@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+
+             <head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1" >
+                          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+                           <title>注册</title>
+                           <!--css-->
+                           <%= stylesheet_link_tag    'bootstrap.min'%>
+                           <%= stylesheet_link_tag    'wechat/style'%>
+
+                           <%= stylesheet_link_tag    'wechat/login'%>
+                           <!--js-->
+                           <%= javascript_include_tag 'jquery.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'bootstrap.min', 'data-turbolinks-track' => true %>
+                           <%= javascript_include_tag 'md5', 'data-turbolinks-track' => true %>
+             </head>
+
+            <body>
+                          
+                           <%if flash[:info].present?%>
+                                        <div id="error_explanation" class="alert alert-danger">
+                                                      <h5><%= flash[:info] %> </h5>
+                                        </div>
+                           <% end %>
+                           
+                           <div id="bm_login_page"> 
+                           <div style="text-align: center; width: 100%;">
+                            <img src="/assets/wechat/top.png" >
+                           </div>
+                           <div id="code_error" class="alert-panel" style="display:none;">
+                          </div>
+                          <%= form_tag(weixin_register_path,method:"post",:class => "clearfix") do %>     
+                                        <div class="login_border">
+                                                      <div class="login_panel">
+                                                                    <div id="new_item">
+                                                                                 
+                                                                                 <%= text_field_tag "email",@user.nil? ? "" : @user.email, id: "email", autofocus: true, placeholder: "邮箱",class:"inline_email"%>
+                                                                                 <input type="button" value="发送验证码" id="send_email" class="varify"  />
+                                                                    </div>
+                                                                    <%=hidden_field_tag "code",session[:code].nil? ? "" : session[:code]%>
+                                                                    <%=hidden_field_tag "time",session[:time].nil? ? "" : session[:time]%>
+                                                                    <div id ="new_item">
+                                                                                
+                                                                                 <%= text_field_tag "verification_code",@user.nil? ? "" : @user.customer_num, id:"verification_code",placeholder:"验证码", class:"inline_text"%>
+                                                                    </div>
+                                                                    <div id="new_item">
+                                                                                 
+                                                                                 <%= text_field_tag "nickname",@user.nil? ? "" : @user.nickname, id: "nickname", placeholder: "用户名",class:"inline_text"%>
+                                                                    </div>
+                                                                    <div id ="new_item">
+                                                                                
+                                                                                 <%= password_field_tag "password","", id:"password", autocomplete: "off", placeholder:"密码(至少8位)", class:"inline_text"%>
+                                                                    </div>
+                                                                    
+                                                                    <input type="submit" value="注册" class="btn" /> 
+                                                                    <span style="font-size:11px;color:#777">帐号注册说明：如果您在官方网站没有注册帐号，可以在此页面注册，该帐号可以在www.mypost4u.com登录使用。</span>
+                                                      </div>
+                                        </div>
+                           <% end %>
+                           </div>
+
+                           <div class="clearfix foot-content">
+                            <img src="/assets/wechat/kuaidi.png" >
+                           </div>
+            </body>
+            <script>
+              
+              $(function(){
+                  var wait=60;
+                  function time(o) {
+                  if (wait == 0) {
+                      o.attr('disabled',false);
+                      o.val("重新发送");
+                      wait = 60;
+                  } else {
+                      o.attr('disabled',true);
+                      o.val("已发送(" + wait + ")");
+                      wait--;
+                      t=setTimeout(function() {
+                          time(o)
+                          },
+                          1000)
+                      }
+                  }
+                  function stopCount()
+          　　{
+          　　clearTimeout(t)
+          　　}
+                  $("#send_email").click(function(){
+                    var email=$("#email").val();
+                    if(email==""){
+                      $("#code_error").attr("style","display:block;").html("请输入有效邮箱");
+                    }else{
+                        $("#code_error").attr("style","display:none;");
+                        
+                        $.ajax({
+                           url:"/wechat/weixin/check_email",
+                           method:"post",
+                           data:{email:email},
+                           success: function(data) {
+
+                              if(data.status=="success"){
+                                    var code=data.info["varify_code"];
+                                    var time=data.info["expired_time"];
+                                    $("#code").val(code);
+                                    $("#time").val(time);
+                              }else{
+                                stopCount();
+                                $("#send_email").attr('disabled',false);
+                                $("#send_email").val("发送验证码");
+                                alert("邮箱已被注册");
+                              }
+                           }
+                      }) 
+                        time($("#send_email"));
+                  }
+                }) 
+                $("#verification_code").on('blur',function(){
+                      var verification_code=$(this).val();
+                      var code=$("#code").val();
+                      if(verification_code!=""){
+                        if(code==""){
+                          $("#code_error").attr("style","display:block;").html("验证码错误");
+                        }else{
+                          var h=hex_md5(verification_code)
+                          if(hex_md5(verification_code)!=code){
+                            $("#code_error").attr("style","display:block;").html("验证码错误");
+                          }else{
+                            var time=$("time").val();
+                            if(time==""){
+                              $("#code_error").attr("style","display:block;").html("验证码错误");
+                            }else if(new Date(time)<new Date()){
+                              $("#code_error").attr("style","display:block;").html("验证码错误");
+                            }else{
+                               $("#code_error").attr("style","display:none;");
+                            }
+                          }
+                         } 
+                      }else{
+                        $("#code_error").attr("style","display:none;");
+                      }
+                }) 
+
+              }) 
+
+            </script>
+</html>
