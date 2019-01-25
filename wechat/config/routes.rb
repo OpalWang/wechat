@@ -32,6 +32,9 @@ Wechat::Engine.routes.draw do
   post 'weixin/get_credit'=>"weixin#get_credit"
   get 'weixin/production_intr_fba'=>"weixin#production_intr_fba"
   get 'weixin/official_accounts_intr'=>"weixin#official_accounts_intr"
+  get 'weixin/registration'=>"weixin#registration"
+  post 'weixin/register'=>"weixin#register"
+  post 'weixin/check_email'=>"weixin#check_email"
 #地址管理
   get 'active_address/add_recipient_address'=>'active_address#add_recipient_address'
   get 'active_address/add_sender_address'=>'active_address#add_sender_address'
